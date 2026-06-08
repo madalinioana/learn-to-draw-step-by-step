@@ -24,7 +24,10 @@ import httpx
 from dotenv import load_dotenv
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
-REPO_ROOT = BACKEND_DIR.parents[1]
+try:
+    REPO_ROOT = BACKEND_DIR.parents[1]
+except IndexError:
+    REPO_ROOT = BACKEND_DIR
 
 load_dotenv(REPO_ROOT / ".env")
 load_dotenv(BACKEND_DIR / ".env", override=True)
