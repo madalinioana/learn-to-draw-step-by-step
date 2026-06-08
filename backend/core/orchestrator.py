@@ -41,21 +41,21 @@ import re
 import time
 from typing import Any, Dict, Iterator, List, Optional
 
-from backend.core.config import (
+from core.config import (
     ARTIST_MODEL,
     CANVAS_SIZE,
     CRITIC_MODEL,
     MAX_ITERATIONS,
     REQUEST_TIMEOUT_SECONDS,
 )
-from backend.core.critic import CritiqueError, VisualCritic, is_clear_accept
-from backend.core.generator import GenerationError, SVGGenerator
-from backend.core.errors import (
+from core.critic import CritiqueError, VisualCritic, is_clear_accept
+from core.generator import GenerationError, SVGGenerator
+from core.errors import (
     ModelBackendError,
     ModelConnectionError,
     ModelNotLoadedError,
 )
-from backend.core.renderer import (
+from core.renderer import (
     RenderError,
     render_critic_comparison,
     render_svg_for_critic,
@@ -887,8 +887,8 @@ if __name__ == "__main__":
     )
     load_dotenv()
 
-    from backend.core.config import OLLAMA_BASE_URL, OLLAMA_API_KEY
-    from backend.core.ollama_client import OllamaClient
+    from core.config import OLLAMA_BASE_URL, OLLAMA_API_KEY
+    from core.ollama_client import OllamaClient
 
     print(f"Ollama:       {OLLAMA_BASE_URL}")
     print(f"Artist model: {ARTIST_MODEL}")

@@ -35,7 +35,7 @@ except ImportError as exc:  # pragma: no cover
 logger = logging.getLogger(__name__)
 
 
-from backend.core.errors import ModelBackendError
+from core.errors import ModelBackendError
 
 
 class GeminiError(ModelBackendError):

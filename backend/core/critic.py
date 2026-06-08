@@ -52,12 +52,12 @@ import re
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
-from backend.core._json_utils import parse_json_payload
-from backend.core.config import (
+from core._json_utils import parse_json_payload
+from core.config import (
     CRITIC_MAX_TOKENS,
     CRITIC_TEMPERATURE,
 )
-from backend.core.errors import ModelBackendError
+from core.errors import ModelBackendError
 
 
 logger = logging.getLogger(__name__)
@@ -1677,7 +1677,7 @@ if __name__ == "__main__":
     )
     load_dotenv()
 
-    from backend.core.config import (
+    from core.config import (
         CRITIC_MODEL,
         OLLAMA_BASE_URL,
         REQUEST_TIMEOUT_SECONDS,
@@ -1693,8 +1693,8 @@ if __name__ == "__main__":
     )
     print()
 
-    from backend.core.config import OLLAMA_BASE_URL, OLLAMA_API_KEY
-    from backend.core.ollama_client import OllamaClient
+    from core.config import OLLAMA_BASE_URL, OLLAMA_API_KEY
+    from core.ollama_client import OllamaClient
     client = OllamaClient(
         base_url=OLLAMA_BASE_URL,
         api_key=OLLAMA_API_KEY,
@@ -1713,7 +1713,7 @@ if __name__ == "__main__":
 
     if svg_path:
         # Use the Critic-optimised render for the actual critique.
-        from backend.core.renderer import render_svg_for_critic
+        from core.renderer import render_svg_for_critic
 
         with open(svg_path, "r", encoding="utf-8") as f:
             svg_str = f.read()

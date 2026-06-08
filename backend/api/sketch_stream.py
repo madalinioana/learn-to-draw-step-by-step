@@ -48,7 +48,7 @@ from core.config import (
     REQUEST_TIMEOUT_SECONDS,
     list_ollama_models,
 )
-from backend.core.orchestrator import ArtistCriticLoop
+from core.orchestrator import ArtistCriticLoop
 
 logger = logging.getLogger(__name__)
 FRONTEND_DIR = APPS_DIR / "frontend"
@@ -75,7 +75,7 @@ _runtime_clients: dict[str, tuple[Any, Any]] = {}
 
 
 def _build_local_artist_client():
-    from backend.core.ollama_client import OllamaClient
+    from core.ollama_client import OllamaClient
     return OllamaClient(
         base_url=OLLAMA_BASE_URL,
         api_key=OLLAMA_API_KEY,
@@ -86,7 +86,7 @@ def _build_local_artist_client():
 
 
 def _build_local_critic_client():
-    from backend.core.ollama_client import OllamaClient
+    from core.ollama_client import OllamaClient
     return OllamaClient(
         base_url=OLLAMA_BASE_URL,
         api_key=OLLAMA_API_KEY,
@@ -97,14 +97,14 @@ def _build_local_critic_client():
 
 
 def _build_gemini_artist_client():
-    from backend.core.gemini_client import GeminiClient
+    from core.gemini_client import GeminiClient
     if not GEMINI_API_KEY:
         raise RuntimeError("GEMINI_API_KEY is empty — set it in .env")
     return GeminiClient(api_key=GEMINI_API_KEY, default_model=GEMINI_ARTIST_MODEL)
 
 
 def _build_gemini_critic_client():
-    from backend.core.gemini_client import GeminiClient
+    from core.gemini_client import GeminiClient
     if not GEMINI_API_KEY:
         raise RuntimeError("GEMINI_API_KEY is empty — set it in .env")
     return GeminiClient(api_key=GEMINI_API_KEY, default_model=GEMINI_CRITIC_MODEL)

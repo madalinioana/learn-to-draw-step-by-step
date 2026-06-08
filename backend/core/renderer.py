@@ -32,7 +32,7 @@ import cairosvg
 from lxml import etree
 from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageOps
 
-from backend.core.config import CANVAS_SIZE
+from core.config import CANVAS_SIZE
 
 
 logger = logging.getLogger(__name__)

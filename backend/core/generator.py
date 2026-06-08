@@ -41,14 +41,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from lxml import etree
 
-from backend.core._json_utils import parse_json_payload
-from backend.core.config import (
+from core._json_utils import parse_json_payload
+from core.config import (
     ARTIST_MAX_TOKENS,
     ARTIST_REVISION_TEMPERATURE,
     ARTIST_TEMPERATURE,
     CANVAS_SIZE,
 )
-from backend.core.errors import ModelBackendError
+from core.errors import ModelBackendError
 
 
 logger = logging.getLogger(__name__)
@@ -2403,7 +2403,7 @@ if __name__ == "__main__":
     )
     load_dotenv()
 
-    from backend.core.config import (
+    from core.config import (
         ARTIST_MODEL,
         OLLAMA_BASE_URL,
         REQUEST_TIMEOUT_SECONDS,
@@ -2411,8 +2411,8 @@ if __name__ == "__main__":
 
     print(f"Connecting to Ollama at {OLLAMA_BASE_URL}")
     print(f"Artist model: {ARTIST_MODEL}")
-    from backend.core.config import OLLAMA_API_KEY
-    from backend.core.ollama_client import OllamaClient
+    from core.config import OLLAMA_API_KEY
+    from core.ollama_client import OllamaClient
     client = OllamaClient(
         base_url=OLLAMA_BASE_URL,
         api_key=OLLAMA_API_KEY,
@@ -2454,7 +2454,7 @@ if __name__ == "__main__":
     print(f"  wrote SVG: {initial_svg_path}")
 
     try:
-        from backend.core.renderer import render_svg_to_png
+        from core.renderer import render_svg_to_png
 
         png_bytes = render_svg_to_png(initial["svg"], size=CANVAS_SIZE)
         with open(initial_png_path, "wb") as f:
@@ -2504,7 +2504,7 @@ if __name__ == "__main__":
     print(f"  wrote SVG: {revised_svg_path}")
 
     try:
-        from backend.core.renderer import render_svg_to_png
+        from core.renderer import render_svg_to_png
 
         png_bytes = render_svg_to_png(revised["svg"], size=CANVAS_SIZE)
         with open(revised_png_path, "wb") as f:

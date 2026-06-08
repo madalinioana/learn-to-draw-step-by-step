@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-from backend.core.errors import ModelBackendError
+from core.errors import ModelBackendError
 
 
 class OllamaError(ModelBackendError):
@@ -282,7 +282,7 @@ if __name__ == "__main__":
     )
     load_dotenv()
 
-    from backend.core.config import OLLAMA_API_KEY, OLLAMA_BASE_URL, OLLAMA_CRITIC_MODEL, REQUEST_TIMEOUT_SECONDS
+    from core.config import OLLAMA_API_KEY, OLLAMA_BASE_URL, OLLAMA_CRITIC_MODEL, REQUEST_TIMEOUT_SECONDS
 
     print(f"Connecting to Ollama at {OLLAMA_BASE_URL}")
     client = OllamaClient(
