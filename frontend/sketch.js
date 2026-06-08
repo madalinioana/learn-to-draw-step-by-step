@@ -3226,7 +3226,6 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
 
   function applyLiveConfig(cfg, base) {
     API_BASE = base;
-    DEPLOYMENT_PROFILE = cfg.profile || DEPLOYMENT_PROFILE;
     document.body.dataset.deploymentProfile = DEPLOYMENT_PROFILE;
     featureFlags = Object.assign({
       live: true,
