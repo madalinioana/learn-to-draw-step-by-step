@@ -2651,7 +2651,7 @@ function initLandingDoodles() {
 // Selected iteration count from the landing stepper, sent to /generate.
 let SELECTED_ITERATIONS = 4;
 let SELECTED_BACKEND = "local";
-let DEPLOYMENT_PROFILE = "local";
+let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
 
 (function initThesisLanding() {
   const screen      = document.getElementById("thesis-landing");
@@ -3226,7 +3226,7 @@ let DEPLOYMENT_PROFILE = "local";
 
   function applyLiveConfig(cfg, base) {
     API_BASE = base;
-    DEPLOYMENT_PROFILE = cfg.profile || "local";
+    DEPLOYMENT_PROFILE = cfg.profile || DEPLOYMENT_PROFILE;
     document.body.dataset.deploymentProfile = DEPLOYMENT_PROFILE;
     featureFlags = Object.assign({
       live: true,

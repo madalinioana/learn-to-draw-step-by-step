@@ -33,7 +33,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from backend.core.config import (
+from core.config import (
     CORS_ALLOW_ORIGINS,
     DEPLOYMENT_PROFILE,
     GEMINI_API_KEY,
