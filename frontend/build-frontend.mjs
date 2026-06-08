@@ -2,7 +2,7 @@ import { cp, mkdir, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
-const source = resolve(root, "apps/frontend");
+const source = resolve(root, "frontend");
 const output = resolve(source, "dist");
 const apiBase = (process.env.SKETCH_API_BASE || "").trim().replace(/\/+$/, "");
 const staticFiles = ["index.html", "style.css", "sketch.js", "demo.js"];
