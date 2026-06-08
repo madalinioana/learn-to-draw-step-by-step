@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sketch</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/aaaakshat/cm-web-fonts@latest/fonts.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=DM+Mono:wght@300;400&family=JetBrains+Mono:wght@400;500&family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=215" />
+</head>
+<body>
+
+<!-- ═══ Thesis landing screen (shown first; fades out on Begin / Demo) ═══════ -->
+<div id="thesis-landing">
+
+  <!-- top nav -->
+  <header class="tl-nav">
+    <div class="tl-brand">
+      <span class="tl-brand-text">Teaching a Language Model to Draw</span>
+    </div>
+    <div class="tl-nav-meta">
+      <span class="tl-nav-item">Bachelor's Thesis</span>
+      <span class="tl-nav-item">Faculty of Mathematics &amp; Computer Science</span>
+      <span class="tl-nav-item">University of Bucharest · 2026</span>
+    </div>
+  </header>
+
+  <!-- main column -->
+  <main class="tl-main">
+
+    <section class="tl-hero" id="tl-abstract">
+      <h1 class="tl-title">A text model learns to draw,<br>guided by a vision critic.</h1>
+      <p class="tl-byline">
+        <span class="tl-author">Mădălin Ioana</span>
+        <span>Faculty of Mathematics and Computer Science</span>
+        <span>University of Bucharest</span>
+        <span class="tl-date">Bachelor's Thesis, 2026</span>
+      </p>
+      <div class="tl-abstract-wrap">
+        <div class="tl-abstract-label">Abstract</div>
+        <p class="tl-abstract">
+          An <strong>Artist</strong> language model writes an SVG sketch from a text
+          prompt. It cannot see. A separate <strong>Critic</strong> vision model looks at
+          the rendered drawing and describes, in plain language, what is wrong. The Artist
+          revises and the loop repeats. This work investigates whether a vision model can
+          measurably improve the output of a text-only model with which it shares no
+          weights, no architecture, and no training data.
+        </p>
+      </div>
+      <p class="tl-keywords"><span>Keywords.</span> multimodal critique; SVG generation; iterative refinement; text-only drawing</p>
+      <p class="tl-method-equation">
+        <span>prompt → Artist → SVG → render → Critic → feedback</span>
+        <span class="tl-equation-num">(1)</span>
+      </p>
+    </section>
+
+    <!-- agent architecture diagram -->
+    <div class="tl-section-label" id="tl-agents"><span class="tl-section-num">1.</span><span>Agent architecture</span></div>
+    <section class="tl-agents">
+      <figure class="tl-diagram tl-diagram--system" aria-label="Typed Artist Critic feedback loop">
+        <svg class="tl-system-svg" viewBox="0 0 720 430" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="sys-arrow" markerWidth="10" markerHeight="8" refX="8" refY="4"
+                    orient="auto" markerUnits="strokeWidth">
+              <path d="M 0 0 L 9 4 L 0 8 Z" fill="#111"/>
+            </marker>
+            <marker id="sys-arrow-muted" markerWidth="10" markerHeight="8" refX="8" refY="4"
+                    orient="auto" markerUnits="strokeWidth">
+              <path d="M 0 0 L 9 4 L 0 8 Z" fill="#111" fill-opacity="0.16"/>
+            </marker>
+          </defs>
+
+          <text class="tl-sys-caption-top" x="360" y="28">typed feedback graph</text>
+
+          <g class="tl-sys-base-links" aria-hidden="true">
+            <path class="tl-sys-base-link" marker-end="url(#sys-arrow-muted)"
+                  d="M 38 122 H 100"/>
+            <path class="tl-sys-base-link" marker-end="url(#sys-arrow-muted)"
+                  d="M 274 122 H 446"/>
+            <path class="tl-sys-base-link" marker-end="url(#sys-arrow-muted)"
+                  d="M 535 178 V 252"/>
+            <path class="tl-sys-base-link" marker-end="url(#sys-arrow-muted)"
+                  d="M 446 308 H 274"/>
+            <path class="tl-sys-base-link" marker-end="url(#sys-arrow-muted)"
+                  d="M 185 252 V 178"/>
+          </g>
+
+          <path id="sys-prompt" class="tl-sys-link tl-sys-link--input" marker-end="url(#sys-arrow)"
+                d="M 38 122 H 100"/>
+          <path id="sys-a-r" class="tl-sys-link" marker-end="url(#sys-arrow)"
+                d="M 274 122 H 446"/>
+          <path id="sys-r-c" class="tl-sys-link" marker-end="url(#sys-arrow)"
+                d="M 535 178 V 252"/>
+          <path id="sys-c-f" class="tl-sys-link" marker-end="url(#sys-arrow)"
+                d="M 446 308 H 274"/>
+          <path id="sys-f-a" class="tl-sys-link" marker-end="url(#sys-arrow)"
+                d="M 185 252 V 178"/>
+
+          <g class="tl-sys-labels">
+            <text class="tl-sys-label tl-sys-label--input" x="66" y="106">prompt p</text>
+            <text class="tl-sys-label tl-sys-label--1" x="360" y="106">s_t : SVG</text>
+            <text class="tl-sys-label tl-sys-label--2" x="574" y="218">I_t = render(s_t)</text>
+            <text class="tl-sys-label tl-sys-label--3" x="360" y="334">r_t, v_t, f_{t+1}</text>
+            <text class="tl-sys-label tl-sys-label--4" x="146" y="218">feedback f_t</text>
+          </g>
+
+          <g class="tl-sys-node tl-sys-node--artist">
+            <rect x="100" y="76" width="174" height="102"/>
+            <text class="tl-sys-node-title" x="187" y="116">Artist</text>
+            <text class="tl-sys-node-role" x="187" y="139">language model</text>
+            <text class="tl-sys-node-mode" x="187" y="158">text -> SVG</text>
+          </g>
+
+          <g class="tl-sys-node tl-sys-node--render">
+            <rect x="446" y="76" width="178" height="102"/>
+            <text class="tl-sys-node-title" x="535" y="116">Renderer</text>
+            <text class="tl-sys-node-role" x="535" y="139">deterministic</text>
+            <text class="tl-sys-node-mode" x="535" y="158">SVG -> pixels</text>
+          </g>
+
+          <g class="tl-sys-node tl-sys-node--critic">
+            <rect x="446" y="252" width="178" height="112"/>
+            <text class="tl-sys-node-title" x="535" y="294">Critic</text>
+            <text class="tl-sys-node-role" x="535" y="317">vision model</text>
+            <text class="tl-sys-node-mode" x="535" y="337">image -> text</text>
+          </g>
+
+          <g class="tl-sys-node tl-sys-node--feedback">
+            <rect x="100" y="252" width="174" height="112"/>
+            <text class="tl-sys-node-title" x="187" y="294">Feedback</text>
+            <text class="tl-sys-node-role" x="187" y="317">natural language</text>
+            <text class="tl-sys-node-mode" x="187" y="337">stored for t + 1</text>
+          </g>
+
+          <g class="tl-sys-equation">
+            <line x1="288" y1="216" x2="432" y2="216"/>
+            <text x="360" y="207">p, f_t -> A -> s_t</text>
+            <text x="360" y="232">render(s_t) -> C -> f_{t+1}</text>
+          </g>
+
+        </svg>
+        <figcaption><span>Figure 1.</span> Typed agent graph. The Artist writes SVG, the renderer produces pixels, and the Critic returns only score, verdict, and prose feedback for the next iteration.</figcaption>
+      </figure>
+      <p class="tl-interface-equation">
+        <span><em>s</em><sub>t</sub> = <em>A</em>(<em>p</em>, <em>f</em><sub>t</sub>),&nbsp;&nbsp;
+          (<em>r</em><sub>t</sub>, <em>v</em><sub>t</sub>, <em>f</em><sub>t+1</sub>) =
+          <em>C</em>(render(<em>s</em><sub>t</sub>))</span>
+        <span class="tl-equation-num">(2)</span>
+      </p>
+      <p class="tl-interface-note">
+        The interface is intentionally narrow: the Artist emits SVG, while the Critic
+        emits only scalar judgment and prose.
+      </p>
+    </section>
+
+    <!-- the loop diagram -->
+    <div class="tl-section-label" id="tl-protocol"><span class="tl-section-num">2.</span><span>Iterative protocol</span></div>
+    <section class="tl-loop">
+      <figure class="tl-algorithm">
+        <figcaption><span>Algorithm 1.</span> Critic-guided SVG refinement.</figcaption>
+        <ol class="tl-algorithm-steps">
+          <li><span class="tl-algorithm-line">1</span><span><strong>Input:</strong> text prompt <em>p</em>, maximum iterations <em>T</em></span></li>
+          <li><span class="tl-algorithm-line">2</span><span>Initialize feedback <em>f</em> as the empty string.</span></li>
+          <li><span class="tl-algorithm-line">3</span><span><strong>for</strong> <em>t</em> = 1, ..., <em>T</em> <strong>do</strong></span></li>
+          <li><span class="tl-algorithm-line">4</span><span class="tl-algorithm-indent">Artist writes SVG from <em>p</em> and previous feedback <em>f</em>.</span></li>
+          <li><span class="tl-algorithm-line">5</span><span class="tl-algorithm-indent">Render SVG to a raster image.</span></li>
+          <li><span class="tl-algorithm-line">6</span><span class="tl-algorithm-indent">Critic assigns score, verdict, and natural-language feedback.</span></li>
+          <li><span class="tl-algorithm-line">7</span><span class="tl-algorithm-indent"><strong>if</strong> verdict is <em>accept</em> <strong>then return</strong> drawing.</span></li>
+          <li><span class="tl-algorithm-line">8</span><span class="tl-algorithm-indent">Set <em>f</em> to the Critic feedback.</span></li>
+          <li><span class="tl-algorithm-line">9</span><span><strong>end for</strong></span></li>
+          <li><span class="tl-algorithm-line">10</span><span><strong>return</strong> final drawing and Critic report.</span></li>
+        </ol>
+      </figure>
+      <p class="tl-loop-caption">
+        <span class="tl-caption-prefix">Note.</span>
+        The Artist never sees the image; it only ever reads the
+        Critic’s words. The run halts when the Critic accepts the drawing or the
+        iteration cap is reached.
+      </p>
+    </section>
+
+    <!-- worked example: a single iteration, drawn + critiqued -->
+    <div class="tl-section-label" id="tl-example"><span class="tl-section-num">3.</span><span>Qualitative example</span></div>
+    <section class="tl-example">
+      <p class="tl-example-lead">
+        A representative pass of the loop. The Artist sketches the subject stroke by stroke;
+        the Critic looks at the result and answers in plain words. This is iteration
+        three of a run on <em>“a cat”</em> — the drawing now reads clearly,
+        but still needs one more refinement pass.
+      </p>
+      <figure class="tl-example-figure">
+        <div class="tl-example-panels">
+          <div class="tl-subfigure tl-subfigure--drawing">
+            <div class="tl-example-plate">
+              <svg class="tl-example-svg" id="tl-ex-svg" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-label="A cat animating stroke by stroke"></svg>
+            </div>
+            <p class="tl-subcaption"><span>(a)</span> Artist sketch <em>s</em><sub>3</sub>, rendered from SVG path data.</p>
+          </div>
+
+          <div class="tl-subfigure tl-subfigure--report">
+            <table class="tl-example-report">
+              <tbody>
+                <tr>
+                  <th scope="row">Prompt</th>
+                  <td><em>“a cat”</em></td>
+                </tr>
+                <tr>
+                  <th scope="row">Iteration</th>
+                  <td>3 / 4</td>
+                </tr>
+                <tr>
+                  <th scope="row">Score</th>
+                  <td><span id="tl-ex-score">8</span> / 10</td>
+                </tr>
+                <tr>
+                  <th scope="row">Verdict</th>
+                  <td class="tl-spec-verdict" id="tl-ex-verdict">revise</td>
+                </tr>
+              </tbody>
+            </table>
+            <blockquote class="tl-example-fb" id="tl-ex-feedback">…</blockquote>
+            <p class="tl-subcaption"><span>(b)</span> Critic output returned to the Artist as text.</p>
+          </div>
+        </div>
+        <figcaption class="tl-example-main-caption"><span>Figure 2.</span> Representative iteration from a cat prompt. The left panel is the rendered Artist SVG; the right panel is the Critic response used for the next refinement pass.</figcaption>
+      </figure>
+    </section>
+
+    <!-- reading the result -->
+    <div class="tl-section-label" id="tl-evaluation"><span class="tl-section-num">4.</span><span>Evaluation signal</span></div>
+    <section class="tl-result">
+      <p class="tl-result-lead">
+        Every iteration is scored <strong>0-10</strong> by the Critic, which also returns a
+        verdict: <em>revise</em> or <em>accept</em>. The loop is useful when the
+        score rises under critique while the final verdict changes state.
+      </p>
+
+      <figure class="tl-eval-figure" aria-label="Critic score trajectory">
+        <div class="tl-result-claim">
+          <span class="tl-result-claim-label">Result 1.</span>
+          <span>
+            In the representative run,
+            <em>r</em> = (4, 6, 7, 9) and
+            <em>v</em><sub>4</sub> = <em>accept</em>; prose feedback is the only
+            signal returned to the Artist.
+          </span>
+        </div>
+
+        <div class="tl-eval-plot-wrap">
+          <svg class="tl-eval-svg" viewBox="0 0 720 338" xmlns="http://www.w3.org/2000/svg">
+            <g class="tl-eval-plot" transform="translate(92 34)">
+              <path class="tl-eval-grid" d="M 0 45 H 540 M 0 90 H 540 M 0 135 H 540"/>
+              <path class="tl-eval-axis" d="M 0 0 V 180 H 540"/>
+              <path class="tl-eval-ticks" d="M 0 180 v 5 M 180 180 v 5 M 360 180 v 5 M 540 180 v 5 M -5 0 h 5 M -5 90 h 5 M -5 180 h 5"/>
+
+              <g class="tl-eval-y">
+                <text x="-20" y="5">10</text>
+                <text x="-20" y="95">5</text>
+                <text x="-20" y="185">0</text>
+              </g>
+              <g class="tl-eval-x">
+                <text x="0" y="207">1</text>
+                <text x="180" y="207">2</text>
+                <text x="360" y="207">3</text>
+                <text x="540" y="207">4</text>
+              </g>
+
+              <text class="tl-eval-y-label" x="-58" y="90" transform="rotate(-90 -58 90)">score r_t</text>
+              <text class="tl-eval-x-label" x="270" y="256">iteration t</text>
+
+              <path class="tl-eval-line" d="M 0 108 L 180 72 L 360 54 L 540 18"/>
+              <path class="tl-eval-line-reveal" d="M 0 108 L 180 72 L 360 54 L 540 18"/>
+              <circle class="tl-eval-dot tl-eval-dot--1" cx="0" cy="108" r="2.8"/>
+              <circle class="tl-eval-dot tl-eval-dot--2" cx="180" cy="72" r="2.8"/>
+              <circle class="tl-eval-dot tl-eval-dot--3" cx="360" cy="54" r="2.8"/>
+              <circle class="tl-eval-dot tl-eval-dot--4" cx="540" cy="18" r="2.8"/>
+
+              <g class="tl-eval-data-labels">
+                <text x="34" y="128">r_1 = 4</text>
+                <text x="180" y="58">r_2 = 6</text>
+                <text x="360" y="40">r_3 = 7</text>
+                <text x="540" y="4">r_4 = 9</text>
+              </g>
+
+              <g class="tl-eval-verdicts">
+                <text class="tl-eval-verdict-label" x="-58" y="236">v_t</text>
+                <text x="0" y="236">revise</text>
+                <text x="180" y="236">revise</text>
+                <text x="360" y="236">revise</text>
+                <text class="tl-eval-verdict--accept" x="540" y="236">accept</text>
+              </g>
+
+            </g>
+          </svg>
+        </div>
+        <figcaption class="tl-eval-caption"><span>Figure 3.</span> Pgfplots-style score trace for one refinement run. The curve is redrawn in reading order; the final marker denotes the accepted drawing.</figcaption>
+      </figure>
+    </section>
+
+    <!-- references -->
+    <div class="tl-section-label tl-section-label--references"><span>References</span></div>
+    <section class="tl-references">
+      <ol>
+        <li>
+          <span>Source code and local reproduction instructions.</span>
+          <a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer">
+            learn-to-draw-step-by-step
+          </a>,
+          2026.
+        </li>
+      </ol>
+    </section>
+
+    <!-- appendix reproduction cell -->
+    <div class="tl-section-label tl-section-label--appendix" id="tl-trial"><span class="tl-section-num">A.</span><span>Interactive reproduction</span></div>
+    <section class="tl-lobby">
+      <p class="tl-lobby-intro" id="tl-lobby-intro">
+        This page also serves as a small reproduction cell. <em>Live</em> runs
+        stream stroke by stroke from the inference backend.
+      </p>
+
+      <div class="tl-repro">
+        <!-- prompt, typeset as a single ruled line of the paper -->
+        <div class="tl-repro-field">
+          <span class="tl-repro-tag">prompt</span>
+          <input type="text" id="tl-prompt" class="tl-prompt-input"
+                 placeholder="a smiling sun" autocomplete="off" spellcheck="false" />
+          <button class="tl-begin" id="tl-begin" type="button">run&nbsp;<span class="tl-begin-arrow" aria-hidden="true">→</span></button>
+        </div>
+
+        <!-- parameters, as an inline definition list -->
+        <dl class="tl-params">
+          <div class="tl-param">
+            <dt>iterations</dt>
+            <dd>
+              <button class="tl-step-btn" id="tl-iter-minus" type="button" aria-label="fewer iterations">−</button>
+              <span class="tl-step-value" id="tl-iter-value">4</span>
+              <button class="tl-step-btn" id="tl-iter-plus" type="button" aria-label="more iterations">+</button>
+            </dd>
+          </div>
+          <div class="tl-param" id="tl-param-backend" role="radiogroup" aria-label="Execution backend">
+            <dt>backend</dt>
+            <dd>
+              <button class="tl-backend-option active" type="button" role="radio" data-backend="local" aria-checked="true">local</button>
+              <button class="tl-backend-option" type="button" role="radio" data-backend="gemini" aria-checked="false">cloud</button>
+            </dd>
+          </div>
+          <div class="tl-param" id="tl-param-source">
+            <dt>source</dt>
+            <dd>
+              <span class="tl-mode-tag" id="tl-meta-mode">live</span>
+              <button class="tl-demo" id="tl-demo" type="button">browse recorded</button>
+            </dd>
+          </div>
+        </dl>
+
+        <!-- recorded subjects, revealed on demand -->
+        <div class="tl-demo-options hidden" id="tl-demo-options">
+          <span class="tl-demo-options-label">recorded subjects</span>
+          <span class="tl-demo-options-list" id="tl-demo-options-list"></span>
+        </div>
+      </div>
+
+      <!-- local runtime + setup -->
+      <div class="tl-repro-note">
+        <p class="tl-backend-line">
+          backend: <span class="tl-backend-state checking" id="tl-bridge-state"><strong id="tl-bridge-status">checking</strong></span><span id="tl-bridge-detail" class="tl-vh">Looking for backend</span>
+        </p>
+        <button type="button" class="tl-bridge-retry" id="tl-bridge-retry">check again</button>
+      </div>
+      <div class="tl-model-status hidden" id="tl-model-status"></div>
+      <p class="tl-repro-setup" id="tl-repro-setup">Local reproduction command:</p>
+<pre class="tl-repro-code" id="tl-repro-code">make local ARTIST=gemma3:27b CRITIC=blaifa/InternVL3_5:8b</pre>
+      <p class="tl-repro-more" id="tl-repro-more">Full setup is in the <a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer">setup notes&nbsp;↗</a>.</p>
+    </section>
+
+  </main>
+</div>
+
+<canvas id="sketch"></canvas>
+
+<!-- Thinking overlay: cycling sketches + typewriter verb -->
+<div id="thinking-overlay" class="hidden">
+  <div id="thinking-block">
+    <svg id="thinking-svg" width="200" height="200" viewBox="0 0 180 180"
+         xmlns="http://www.w3.org/2000/svg"
+         fill="none" stroke="#111" stroke-width="1.5" stroke-linecap="round">
+    </svg>
+    <div id="thinking-verb"></div>
+  </div>
+</div>
+
+<!-- Landing overlay: scattered doodles (one-time, hidden after first submit) -->
+<div id="landing">
+
+  <!-- Sun (80px) -->
+  <div class="doodle" id="doodle-sun">
+    <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 22 C 51 21,58 30,58 40 C 58 52,51 59,40 58 C 29 57,22 49,22 40 C 22 29,30 23,40 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 18 L 40 10 M 56 26 L 62 19 M 61 40 L 69 40 M 56 54 L 62 61 M 40 62 L 40 70 M 24 54 L 18 61 M 19 40 L 11 40 M 24 26 L 18 19"/>
+    </svg>
+  </div>
+
+  <!-- Cat face (80px) -->
+  <div class="doodle" id="doodle-cat">
+    <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 17 C 55 16,65 27,64 42 C 63 57,52 67,40 66 C 28 65,16 57,17 42 C 18 27,27 18,40 17"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 24 28 L 19 13 L 33 22 M 56 28 L 61 13 L 47 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 32 40 Q 33 37,34 40 M 46 40 Q 47 37,48 40 M 38 47 L 40 44 L 42 47 M 17 49 L 33 47 M 17 53 L 33 52 M 63 49 L 47 47 M 63 53 L 47 52"/>
+    </svg>
+  </div>
+
+  <!-- Lighthouse (70×85px) -->
+  <div class="doodle" id="doodle-lighthouse">
+    <svg width="70" height="85" viewBox="0 0 62 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 20 72 L 18 46 L 22 28 L 40 28 L 44 46 L 42 72 Z M 19 46 L 41 46 M 23 58 L 39 58"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 22 28 L 22 22 L 40 22 L 40 28 M 22 22 Q 31 15,40 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 41 24 L 53 18 M 42 21 L 56 13 M 40 18 L 50 10 M 27 72 L 27 62 Q 31 59,35 62 L 35 72"/>
+    </svg>
+  </div>
+
+  <!-- Flower (80px) -->
+  <div class="doodle" id="doodle-flower">
+    <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 38 Q 36 25,40 16 Q 44 25,40 38 M 43 40 Q 56 35,62 28 Q 55 40,43 42 M 41 44 Q 57 49,60 59 Q 48 50,40 45 M 39 44 Q 23 49,20 59 Q 32 50,40 45 M 37 40 Q 24 35,18 28 Q 25 40,37 42"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 33 C 44 33,47 36,47 40 C 47 44,44 47,40 47 C 36 47,33 44,33 40 C 33 36,36 33,40 33"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 47 Q 41 58,40 70"/>
+    </svg>
+  </div>
+
+  <!-- Sailboat (79×72px) -->
+  <div class="doodle" id="doodle-sailboat">
+    <svg width="79" height="72" viewBox="0 0 80 74" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 16 54 Q 40 65,64 54 L 58 62 Q 40 70,22 62 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 54 L 40 16"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 18 Q 58 34,57 54 L 40 54 M 40 22 Q 24 36,22 54 L 40 54"/>
+    </svg>
+  </div>
+
+  <!-- House (77×80px) -->
+  <div class="doodle" id="doodle-house">
+    <svg width="77" height="80" viewBox="0 0 80 82" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 14 46 L 14 72 L 66 72 L 66 46"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 10 47 L 40 18 L 70 47 M 52 34 L 52 25 L 60 25 L 60 41"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 34 72 L 34 58 Q 40 54,46 58 L 46 72 M 19 52 L 29 52 L 29 64 L 19 64 Z M 24 52 L 24 64 M 19 58 L 29 58"/>
+    </svg>
+  </div>
+
+  <!-- Star (70px) -->
+  <div class="doodle" id="doodle-star">
+    <svg width="70" height="70" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" d="M 40 12 L 46 31 L 67 31 L 51 44 L 56 63 L 40 50 L 24 63 L 29 44 L 13 31 L 34 31 Z"/>
+    </svg>
+  </div>
+
+  <!-- Bicycle (94×70px) -->
+  <div class="doodle" id="doodle-bicycle">
+    <svg width="94" height="70" viewBox="0 0 90 74" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 22 37 C 32 37,39 44,39 54 C 39 64,32 71,22 71 C 12 70,5 63,5 54 C 5 44,12 37,22 37"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 68 37 C 78 37,85 44,85 54 C 85 64,78 71,68 71 C 58 70,51 63,51 54 C 51 44,58 37,68 37"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 45 54 L 55 34 L 68 54 M 55 34 L 22 36 M 22 54 L 45 54 M 50 29 L 46 29 M 53 25 L 63 29 M 55 34 Q 56 31,55 29"/>
+    </svg>
+  </div>
+
+  <!-- Moon (64×73px) -->
+  <div class="doodle" id="doodle-moon">
+    <svg width="64" height="73" viewBox="0 0 60 70" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 42 12 C 28 14,17 26,17 40 C 17 55,28 66,42 68 C 30 64,22 53,22 40 C 22 27,30 17,42 12 Z"/>
+    </svg>
+  </div>
+
+  <!-- Cloud (94×60px) -->
+  <div class="doodle" id="doodle-cloud">
+    <svg width="94" height="60" viewBox="0 0 90 56" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 18 40 C 10 40,6 34,8 28 C 10 22,17 20,22 23 C 23 14,31 9,40 12 C 47 8,56 12,57 20 C 63 18,71 23,70 31 C 69 38,63 42,56 40 Z"/>
+    </svg>
+  </div>
+
+  <!-- Mushroom (69×76px) -->
+  <div class="doodle" id="doodle-mushroom">
+    <svg width="69" height="76" viewBox="0 0 65 72" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 18 38 C 8 36,5 26,10 18 C 16 8,30 5,40 8 C 52 5,62 14,60 26 C 58 34,50 40,40 38 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 26 38 L 24 56 Q 32 62,40 56 L 38 38"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 26 22 C 28 19,32 19,33 22 C 34 25,31 27,28 26 C 26 25,25 23,26 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 43 18 C 45 15,49 16,49 19 C 49 22,46 23,44 22 C 42 21,42 19,43 18"/>
+    </svg>
+  </div>
+
+  <!-- Paper airplane (80×64px) -->
+  <div class="doodle" id="doodle-plane">
+    <svg width="80" height="64" viewBox="0 0 76 60" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" d="M 8 30 L 68 10 L 48 52 L 36 36 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 36 36 L 68 10"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 36 36 L 32 50"/>
+    </svg>
+  </div>
+
+  <!-- Tree (pine, 66×84px) -->
+  <div class="doodle" id="doodle-tree">
+    <svg width="66" height="84" viewBox="0 0 60 76" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 30 8 L 6 40 L 18 38 L 4 60 L 20 57 L 14 72 L 46 72 L 40 57 L 56 60 L 42 38 L 54 40 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 30 62 L 30 72"/>
+    </svg>
+  </div>
+
+  <!-- Snail (76×52px) -->
+  <div class="doodle" id="doodle-snail">
+    <svg width="76" height="52" viewBox="0 0 76 52" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 38 30 C 38 20,46 14,54 18 C 62 22,64 32,58 38 C 52 44,40 42,34 36 C 26 28,28 16,38 12 C 50 8,62 16,62 30"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 34 36 Q 20 38,10 34 Q 4 32,6 40 Q 8 46,20 44 L 62 44"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 28 16 L 24 8 M 34 14 L 32 6"/>
+    </svg>
+  </div>
+
+  <!-- Cup of tea (60×66px) -->
+  <div class="doodle" id="doodle-cup">
+    <svg width="60" height="66" viewBox="0 0 60 66" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 10 22 L 14 54 Q 30 60,46 54 L 50 22 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 50 28 Q 62 28,62 36 Q 62 44,50 44"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 8 58 L 52 58"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 22 16 Q 20 10,22 4 M 30 16 Q 28 8,30 2 M 38 16 Q 36 10,38 4"/>
+    </svg>
+  </div>
+
+  <!-- Heart (66px) -->
+  <div class="doodle" id="doodle-heart">
+    <svg width="66" height="62" viewBox="0 0 66 62" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" d="M 33 54 C 20 44,4 36,4 22 C 4 12,12 6,20 8 C 26 10,30 16,33 20 C 36 16,40 10,46 8 C 54 6,62 12,62 22 C 62 36,46 44,33 54 Z"/>
+    </svg>
+  </div>
+
+  <!-- Glasses (80×36px) -->
+  <div class="doodle" id="doodle-glasses">
+    <svg width="80" height="36" viewBox="0 0 80 36" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 4 18 C 4 10,10 4,18 4 C 26 4,32 10,32 18 C 32 26,26 32,18 32 C 10 32,4 26,4 18"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 48 18 C 48 10,54 4,62 4 C 70 4,76 10,76 18 C 76 26,70 32,62 32 C 54 32,48 26,48 18"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 32 16 Q 40 12,48 16"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 4 14 Q 2 8,2 4 M 76 14 Q 78 8,78 4"/>
+    </svg>
+  </div>
+
+  <!-- Smaller duplicates (60px range) -->
+
+  <!-- Sun 2 -->
+  <div class="doodle" id="doodle-sun-2">
+    <svg width="64" height="64" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 22 C 51 21,58 30,58 40 C 58 52,51 59,40 58 C 29 57,22 49,22 40 C 22 29,30 23,40 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 18 L 40 10 M 56 26 L 62 19 M 61 40 L 69 40 M 56 54 L 62 61 M 40 62 L 40 70 M 24 54 L 18 61 M 19 40 L 11 40 M 24 26 L 18 19"/>
+    </svg>
+  </div>
+
+  <!-- Cat 2 -->
+  <div class="doodle" id="doodle-cat-2">
+    <svg width="66" height="66" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 17 C 55 16,65 27,64 42 C 63 57,52 67,40 66 C 28 65,16 57,17 42 C 18 27,27 18,40 17"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 24 28 L 19 13 L 33 22 M 56 28 L 61 13 L 47 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 32 40 Q 33 37,34 40 M 46 40 Q 47 37,48 40 M 38 47 L 40 44 L 42 47 M 17 49 L 33 47 M 17 53 L 33 52 M 63 49 L 47 47 M 63 53 L 47 52"/>
+    </svg>
+  </div>
+
+  <!-- Flower 2 -->
+  <div class="doodle" id="doodle-flower-2">
+    <svg width="66" height="66" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 38 Q 36 25,40 16 Q 44 25,40 38 M 43 40 Q 56 35,62 28 Q 55 40,43 42 M 41 44 Q 57 49,60 59 Q 48 50,40 45 M 39 44 Q 23 49,20 59 Q 32 50,40 45 M 37 40 Q 24 35,18 28 Q 25 40,37 42"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 33 C 44 33,47 36,47 40 C 47 44,44 47,40 47 C 36 47,33 44,33 40 C 33 36,36 33,40 33"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 47 Q 41 58,40 70"/>
+    </svg>
+  </div>
+
+  <!-- Sailboat 2 -->
+  <div class="doodle" id="doodle-sailboat-2">
+    <svg width="62" height="58" viewBox="0 0 80 74" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 16 54 Q 40 65,64 54 L 58 62 Q 40 70,22 62 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 54 L 40 16"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 40 18 Q 58 34,57 54 L 40 54 M 40 22 Q 24 36,22 54 L 40 54"/>
+    </svg>
+  </div>
+
+  <!-- Star 2 -->
+  <div class="doodle" id="doodle-star-2">
+    <svg width="56" height="56" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" d="M 40 12 L 46 31 L 67 31 L 51 44 L 56 63 L 40 50 L 24 63 L 29 44 L 13 31 L 34 31 Z"/>
+    </svg>
+  </div>
+
+  <!-- Moon 2 -->
+  <div class="doodle" id="doodle-moon-2">
+    <svg width="50" height="58" viewBox="0 0 60 70" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 42 12 C 28 14,17 26,17 40 C 17 55,28 66,42 68 C 30 64,22 53,22 40 C 22 27,30 17,42 12 Z"/>
+    </svg>
+  </div>
+
+  <!-- Bicycle 2 -->
+  <div class="doodle" id="doodle-bicycle-2">
+    <svg width="74" height="56" viewBox="0 0 90 74" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 22 37 C 32 37,39 44,39 54 C 39 64,32 71,22 71 C 12 70,5 63,5 54 C 5 44,12 37,22 37"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 68 37 C 78 37,85 44,85 54 C 85 64,78 71,68 71 C 58 70,51 63,51 54 C 51 44,58 37,68 37"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 45 54 L 55 34 L 68 54 M 55 34 L 22 36 M 22 54 L 45 54 M 50 29 L 46 29 M 53 25 L 63 29 M 55 34 Q 56 31,55 29"/>
+    </svg>
+  </div>
+
+  <!-- Mushroom 2 -->
+  <div class="doodle" id="doodle-mushroom-2">
+    <svg width="56" height="62" viewBox="0 0 65 72" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 18 38 C 8 36,5 26,10 18 C 16 8,30 5,40 8 C 52 5,62 14,60 26 C 58 34,50 40,40 38 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 26 38 L 24 56 Q 32 62,40 56 L 38 38"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 26 22 C 28 19,32 19,33 22 C 34 25,31 27,28 26 C 26 25,25 23,26 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 43 18 C 45 15,49 16,49 19 C 49 22,46 23,44 22 C 42 21,42 19,43 18"/>
+    </svg>
+  </div>
+
+  <!-- Lighthouse 2 -->
+  <div class="doodle" id="doodle-lighthouse-2">
+    <svg width="56" height="68" viewBox="0 0 62 80" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 20 72 L 18 46 L 22 28 L 40 28 L 44 46 L 42 72 Z M 19 46 L 41 46 M 23 58 L 39 58"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 22 28 L 22 22 L 40 22 L 40 28 M 22 22 Q 31 15,40 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 41 24 L 53 18 M 42 21 L 56 13 M 40 18 L 50 10 M 27 72 L 27 62 Q 31 59,35 62 L 35 72"/>
+    </svg>
+  </div>
+
+  <!-- Plane 2 -->
+  <div class="doodle" id="doodle-plane-2">
+    <svg width="62" height="50" viewBox="0 0 76 60" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" d="M 8 30 L 68 10 L 48 52 L 36 36 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 36 36 L 68 10"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 36 36 L 32 50"/>
+    </svg>
+  </div>
+
+  <!-- House 2 -->
+  <div class="doodle" id="doodle-house-2">
+    <svg width="62" height="64" viewBox="0 0 80 82" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 14 46 L 14 72 L 66 72 L 66 46"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 10 47 L 40 18 L 70 47 M 52 34 L 52 25 L 60 25 L 60 41"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 34 72 L 34 58 Q 40 54,46 58 L 46 72 M 19 52 L 29 52 L 29 64 L 19 64 Z M 24 52 L 24 64 M 19 58 L 29 58"/>
+    </svg>
+  </div>
+
+  <!-- Cloud 2 -->
+  <div class="doodle" id="doodle-cloud-2">
+    <svg width="76" height="48" viewBox="0 0 90 56" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 18 40 C 10 40,6 34,8 28 C 10 22,17 20,22 23 C 23 14,31 9,40 12 C 47 8,56 12,57 20 C 63 18,71 23,70 31 C 69 38,63 42,56 40 Z"/>
+    </svg>
+  </div>
+
+  <!-- Tree 2 -->
+  <div class="doodle" id="doodle-tree-2">
+    <svg width="52" height="66" viewBox="0 0 60 76" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 30 8 L 6 40 L 18 38 L 4 60 L 20 57 L 14 72 L 46 72 L 40 57 L 56 60 L 42 38 L 54 40 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 30 62 L 30 72"/>
+    </svg>
+  </div>
+
+  <!-- Heart 2 -->
+  <div class="doodle" id="doodle-heart-2">
+    <svg width="52" height="48" viewBox="0 0 66 62" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" d="M 33 54 C 20 44,4 36,4 22 C 4 12,12 6,20 8 C 26 10,30 16,33 20 C 36 16,40 10,46 8 C 54 6,62 12,62 22 C 62 36,46 44,33 54 Z"/>
+    </svg>
+  </div>
+
+  <!-- Glasses 2 -->
+  <div class="doodle" id="doodle-glasses-2">
+    <svg width="64" height="28" viewBox="0 0 80 36" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 4 18 C 4 10,10 4,18 4 C 26 4,32 10,32 18 C 32 26,26 32,18 32 C 10 32,4 26,4 18"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 48 18 C 48 10,54 4,62 4 C 70 4,76 10,76 18 C 76 26,70 32,62 32 C 54 32,48 26,48 18"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 32 16 Q 40 12,48 16"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 4 14 Q 2 8,2 4 M 76 14 Q 78 8,78 4"/>
+    </svg>
+  </div>
+
+  <!-- Cup 2 -->
+  <div class="doodle" id="doodle-cup-2">
+    <svg width="48" height="52" viewBox="0 0 60 66" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 10 22 L 14 54 Q 30 60,46 54 L 50 22 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 50 28 Q 62 28,62 36 Q 62 44,50 44"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 8 58 L 52 58"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 22 16 Q 20 10,22 4 M 30 16 Q 28 8,30 2 M 38 16 Q 36 10,38 4"/>
+    </svg>
+  </div>
+
+  <!-- Rocket (58×84px) -->
+  <div class="doodle" id="doodle-rocket">
+    <svg width="58" height="84" viewBox="0 0 58 84" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 29 6 C 18 10,12 24,12 40 L 12 62 L 46 62 L 46 40 C 46 24,40 10,29 6 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 12 54 L 4 66 L 12 64 M 46 54 L 54 66 L 46 64"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 22 62 Q 24 74,29 78 Q 34 74,36 62"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 23 34 C 23 28,35 28,35 34 C 35 40,23 40,23 34"/>
+    </svg>
+  </div>
+
+  <!-- Leaf (52×68px) -->
+  <div class="doodle" id="doodle-leaf">
+    <svg width="52" height="68" viewBox="0 0 52 68" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 26 8 C 44 8,50 28,44 46 C 38 60,26 64,26 64 C 26 64,14 60,8 46 C 2 28,8 8,26 8 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 26 8 L 26 64"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 26 24 L 38 32 M 26 36 L 38 44 M 26 24 L 14 32 M 26 36 L 14 44"/>
+    </svg>
+  </div>
+
+  <!-- Fish (72×46px) -->
+  <div class="doodle" id="doodle-fish">
+    <svg width="72" height="46" viewBox="0 0 72 46" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 56 23 C 56 12,66 4,70 4 C 66 12,66 34,70 42 C 66 42,56 34,56 23"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 56 23 C 44 10,20 8,6 23 C 20 38,44 36,56 23 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 24 20 C 24 17,28 17,28 20 C 28 23,24 23,24 20"/>
+    </svg>
+  </div>
+
+  <!-- Diamond (54×62px) -->
+  <div class="doodle" id="doodle-diamond">
+    <svg width="54" height="62" viewBox="0 0 54 62" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" d="M 27 58 L 2 22 L 12 4 L 42 4 L 52 22 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 2 22 L 52 22 M 12 4 L 27 22 L 42 4"/>
+    </svg>
+  </div>
+
+  <!-- Bow / ribbon (66×44px) -->
+  <div class="doodle" id="doodle-bow">
+    <svg width="66" height="44" viewBox="0 0 66 44" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 33 22 C 24 16,8 6,4 12 C 0 18,14 24,33 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 33 22 C 42 16,58 6,62 12 C 66 18,52 24,33 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 33 22 C 24 28,8 38,4 32 C 0 26,14 20,33 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 33 22 C 42 28,58 38,62 32 C 66 26,52 20,33 22"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 29 20 C 29 16,37 16,37 20 C 37 26,29 26,29 22 Z"/>
+    </svg>
+  </div>
+
+  <!-- Spiral (54px) -->
+  <div class="doodle" id="doodle-spiral">
+    <svg width="54" height="54" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 27 27 C 27 22,32 20,36 23 C 40 26,40 33,36 37 C 32 41,24 41,19 37 C 14 33,13 24,18 19 C 23 14,33 13,39 18 C 45 23,46 34,41 40 C 36 46,24 48,17 43 C 10 38,8 26,14 18 C 20 10,33 8,42 13"/>
+    </svg>
+  </div>
+
+  <!-- Crown (68×50px) -->
+  <div class="doodle" id="doodle-crown">
+    <svg width="68" height="50" viewBox="0 0 68 50" xmlns="http://www.w3.org/2000/svg">
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" d="M 6 42 L 6 16 L 20 28 L 34 8 L 48 28 L 62 16 L 62 42 Z"/>
+      <path class="doodle-path" stroke="#777" stroke-width="1.5" fill="none" stroke-linecap="round" d="M 6 34 L 62 34"/>
+    </svg>
+  </div>
+
+</div><!-- /#landing -->
+
+<!-- Prompt input (centered, fades in after doodles draw) -->
+<div id="prompt-ui" class="hidden">
+  <div id="input-wrapper">
+    <input
+      id="prompt-input"
+      type="text"
+      placeholder="what should I draw?"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <svg id="arc-bottom" class="input-arc" width="560" height="18" viewBox="0 0 560 18"
+      xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round">
+      <path class="frame-side" id="frame-bottom"
+        d="M 30 4 C 150 12, 300 3, 440 10 C 490 13, 520 7, 530 8"/>
+    </svg>
+  </div>
+  <div id="demo-chips" class="hidden"></div>
+</div>
+
+<div id="annotation-layer">
+  <div id="step-label"></div>
+  <div id="done-label"></div>
+  <div id="error-toast"></div>
+</div>
+
+<div id="critic-feedback"></div>
+
+<!-- ═══ Live appendix figure plate — sits directly beneath the drawing ══════ -->
+<section id="run-panel" class="hidden" aria-label="Interactive drawing record">
+  <figure class="rp-paper">
+    <figcaption class="rp-caption">
+      <span class="rp-caption-label" id="rp-figure-label">Figure A1.</span>
+      Critic-guided reconstruction of <span class="rp-prompt" id="rp-prompt">—</span>.
+    </figcaption>
+
+    <p class="rp-note">
+      <span class="rp-note-label">Critic note.</span>
+      <span class="rp-feedback muted" id="rp-feedback">Waiting for the critic…</span>
+    </p>
+
+    <p class="rp-meta">
+      <span class="rp-meta-left">
+        <span class="rp-metric"><span class="rp-metric-key" id="rp-score-key">r<sub>1</sub> =</span> <span class="rp-metric-val" id="rp-score">—</span></span>
+        <span class="rp-meta-sep">·</span>
+      </span>
+      <span class="rp-state"><span class="rp-status-dot" id="rp-status-dot"></span><span id="rp-status-text">running</span>, <span class="rp-elapsed" id="rp-elapsed">0</span> s elapsed</span>
+      <span class="rp-meta-right">
+        <span class="rp-meta-sep rp-iter-sep">·</span>
+        <span class="rp-control-line">
+          <span class="rp-iter-prefix"><em>t</em> =</span>
+          <span class="rp-iter-track" id="rp-iter-track" aria-label="iteration navigation"></span>
+          <span class="rp-continue-sep" id="rp-continue-sep">·</span>
+          <button class="rp-continue" id="rp-continue" type="button" disabled>continue</button>
+        </span>
+      </span>
+    </p>
+
+    <p class="rp-return-row">
+      <button class="rp-return" id="rp-return" type="button">back to overview</button>
+    </p>
+
+    <!-- retained for the run script; not rendered in the caption. The
+         Critic's verdict is recorded as data but no longer shown in the UI. -->
+    <div class="rp-stash" aria-hidden="true">
+      <span id="rp-verdict-key">v =</span><span id="rp-verdict">—</span>
+      <span id="rp-iter-id">Iteration 1</span><span id="rp-phase">drawing</span>
+      <span id="rp-t-artist">—</span><i id="rp-bar-artist"></i>
+      <span id="rp-t-critic">—</span><i id="rp-bar-critic"></i>
+      <span id="rp-t-total">—</span>
+    </div>
+  </figure>
+</section>
+
+<script src="config.js?v=1"></script>
+<script src="demo.js?v=36"></script>
+<script src="sketch.js?v=152"></script>
+</body>
+</html>

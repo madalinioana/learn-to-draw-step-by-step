@@ -1,0 +1,8 @@
+.git
+.env
+.venv
+__pycache__
+*.pyc
+.DS_Store
+docs
+repomix-output.xml

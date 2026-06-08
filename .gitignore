@@ -1,0 +1,36 @@
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+apps/frontend/dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local model weights (managed by Ollama, not the repo)
+/models/
+
+docs/thesis/sample_runs/output/
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+docs/thesis/prism/_localbuild.*
+docs/thesis/prism/*.aux
+docs/thesis/prism/*.log
+docs/thesis/prism/*.out
+docs/thesis/prism/*.toc
+docs/thesis/prism/*.bbl
+docs/thesis/prism/*.blg
+docs/thesis/prism/*.run.xml
+
+.claude/
+thesis/
