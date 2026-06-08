@@ -3280,13 +3280,12 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
   }
 
   function applyOfflineConfig() {
-    DEPLOYMENT_PROFILE = "local";
     document.body.dataset.deploymentProfile = DEPLOYMENT_PROFILE;
     featureFlags = {
       live: true,
       recorded: false,
       backend_picker: false,
-      show_model_names: true,
+      show_model_names: DEPLOYMENT_PROFILE === "local",
     };
     runtimeInfo = {};
     backendOptions = {
