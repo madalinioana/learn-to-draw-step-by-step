@@ -1092,7 +1092,7 @@ function computeSVGBounds() {
   }
 
   const reserve = Math.min(ch * 0.26, 190);
-  const gap = 20;
+  const gap = 28;
   const margin = 30;
   const availH = Math.max(220, ch - reserve - gap - margin * 2);
   const s = Math.min(cw / SVG_NATIVE, availH / SVG_NATIVE, MAX_FIG / SVG_NATIVE);
@@ -1101,9 +1101,9 @@ function computeSVGBounds() {
   const y = Math.max(margin, (ch - blockH) / 2);
   const x = (cw - w) / 2;
   const ink = computeSVGInkBox(activePanelSVG());
-  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + 6) / SVG_NATIVE) * h : y + h * 0.56;
+  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + 24) / SVG_NATIVE) * h : y + h * 0.56;
   const desiredCaptionTop = ink ? inkBottom + gap : y + h * 0.52;
-  const captionTop = Math.max(y + h * 0.34, Math.min(y + h + gap, desiredCaptionTop));
+  const captionTop = Math.max(y + h * 0.60, Math.min(y + h + gap, desiredCaptionTop));
 
   root.setProperty("--rp-top", captionTop + "px");
   root.setProperty("--fig-dx", "0px");
