@@ -1091,9 +1091,10 @@ function computeSVGBounds() {
     return { x:(cw - w) / 2, y:(ch - h) / 2, width:w, height:h, scale:s };
   }
 
-  const reserve = Math.min(ch * 0.26, 190);
+  const isMobile = cw <= 560;
+  const reserve = isMobile ? Math.min(ch * 0.32, 220) : Math.min(ch * 0.26, 190);
   const gap = 28;
-  const margin = 30;
+  const margin = isMobile ? 20 : 30;
   const availH = Math.max(220, ch - reserve - gap - margin * 2);
   const s = Math.min(cw / SVG_NATIVE, availH / SVG_NATIVE, MAX_FIG / SVG_NATIVE);
   const w = SVG_NATIVE * s, h = SVG_NATIVE * s;
@@ -2358,6 +2359,7 @@ function handleEvent(ev) {
 // ── SSE connection ────────────────────────────────────────────────────────
 function startGeneration(prompt) {
   abortDemo();
+  hidePromptUI();
   const dismissMs = landingFadeOut();
   transition("preparing");
   state.currentIteration=0; state.currentSVG=null; state.previousSVG=null;
