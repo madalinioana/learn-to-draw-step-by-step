@@ -990,13 +990,56 @@ async function _viewIter(idx, opts = {}) {
     const bounds = computeSVGBounds();
     state.svgBounds = bounds; window.svgBounds = bounds;
 
-    // Build a diff map for iteration N > 0 so the animator replays unchanged
-    // paths at high speed and only slows down for new / changed ones.
+    // For iteration N > 0: fade the previous iteration onto the canvas as a
+    // static background, then animate only new / changed paths on top.
     let prevDMap = {};
     if (idx > 0) {
       const prevRec = state.iterRecords[idx - 1];
       const prevSVG = (prevRec && prevRec.svg) || state.iterHistory[idx - 1];
-      if (prevSVG) prevDMap = buildPathDMap(prevSVG);
+      if (prevSVG) {
+        prevDMap = buildPathDMap(prevSVG);
+        // Build background using the same per-path wrapper as _singlePathSVG so
+        // stroke widths and rendering pipeline match the animated strokes exactly.
+        const sw = artStrokeWidth(bounds);
+        const prevEl = parseSVG(prevSVG);
+        const prevPaths = prevEl ? extractStepPaths(prevEl) : [];
+        const pathsHTML = prevPaths.map(({el}) => {
+          const cl = el.cloneNode(true);
+          cl.setAttribute("stroke", ART_STROKE);
+          cl.setAttribute("stroke-width", sw);
+          cl.setAttribute("fill", "none");
+          cl.setAttribute("stroke-opacity", "1");
+          cl.setAttribute("opacity", "1");
+          cl.removeAttribute("style");
+          cl.removeAttribute("filter");
+          return cl.outerHTML;
+        }).join("");
+        const bgSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SVG_NATIVE} ${SVG_NATIVE}" width="${SVG_NATIVE}" height="${SVG_NATIVE}"><g fill="none" stroke-linecap="round" stroke-linejoin="round">${pathsHTML}</g></svg>`;
+        const prevUrl = URL.createObjectURL(new Blob([bgSVG], {type:"image/svg+xml"}));
+        const prevImg = await new Promise((res, rej) => {
+          const img = new Image();
+          img.onload = () => { URL.revokeObjectURL(prevUrl); res(img); };
+          img.onerror = () => { URL.revokeObjectURL(prevUrl); rej(new Error("SVG load")); };
+          img.src = prevUrl;
+        });
+        if (_panelSel !== idx) return;
+        await new Promise(resolve => {
+          const t0 = performance.now(), dur = 560;
+          const tick = now => {
+            const t = Math.min((now - t0) / dur, 1);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.globalAlpha = ease(t);
+            ctx.drawImage(prevImg, bounds.x, bounds.y, bounds.width, bounds.height);
+            ctx.restore();
+            if (t < 1) requestAnimationFrame(tick); else resolve();
+          };
+          requestAnimationFrame(tick);
+        });
+        if (_panelSel !== idx) return;
+        await delay(240);
+        if (_panelSel !== idx) return;
+      }
     }
 
     const anim = new StrokeAnimator(svg, (rec && rec.steps) || [], bounds, prevDMap);
@@ -1586,14 +1629,13 @@ class StrokeAnimator {
       const label   =this.steps[i]||this.steps[n-1]||"";
       const prevD   =this.prevDMap[id];
       const isRedraw=hasPrev && prevD!==undefined && prevD!==dAttr;
-      const unchanged=hasPrev && prevD===dAttr;
+      // Unchanged paths are already on canvas from the background fade — skip them.
+      if (hasPrev && prevD===dAttr) { this._progress=(i+1)/total; continue; }
       if (isRedraw) await this._erasePath(id);
-      // Unchanged paths replay at high speed to re-establish context;
-      // new / changed paths animate at full speed to highlight the delta.
-      if (!unchanged) this._setLabel(label);
-      await this._animStroke(el, unchanged);
+      this._setLabel(label);
+      await this._animStroke(el);
       this._progress=(i+1)/total;
-      if (i<total-1&&!this._cancelled) await delay(unchanged ? 80 : 150);
+      if (i<total-1&&!this._cancelled) await delay(150);
     }
     await delay(1000);
     this._setLabel("");
@@ -1618,7 +1660,7 @@ class StrokeAnimator {
         const t=Math.min((now-t0)/300,1);
         ctx.putImageData(snap,0,0);
         ctx.save();
-        ctx.globalAlpha=lerp(0,0.85,ease(t));
+        ctx.globalAlpha=lerp(0,1.0,ease(t));
         ctx.fillStyle="#ffffff";
         ctx.fillRect(rx,ry,rw,rh);
         ctx.restore();
@@ -1628,7 +1670,7 @@ class StrokeAnimator {
     });
   }
 
-  async _animStroke(pathEl, fast=false) {
+  async _animStroke(pathEl) {
     let len=200;
     try {
       const ns="http://www.w3.org/2000/svg", s=document.createElementNS(ns,"svg");
@@ -1638,7 +1680,7 @@ class StrokeAnimator {
       len=cl.getTotalLength(); document.body.removeChild(s);
     } catch(_){}
 
-    const dur=fast ? Math.max(420, doodleDrawDuration(len) * 0.35) : doodleDrawDuration(len);
+    const dur=doodleDrawDuration(len);
     const t0 =performance.now();
     const b  =this.bounds;
 
