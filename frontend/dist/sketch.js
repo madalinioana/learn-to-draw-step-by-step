@@ -868,6 +868,9 @@ function panelSetLive(idx, phase) {
     _panelDisplayFeedback(rec) &&
     /\bartist is drawing\b/i.test(currentFeedback)
   ) {
+    // If the drawing animation is still in progress, don't interrupt it —
+    // _viewIter will show feedback after anim.play() resolves.
+    if (_panelDrawingReveal === idx) return;
     _panelShowInspection(idx, _panelCriticDelay(idx, 1400), true);
     return;
   }
@@ -995,9 +998,25 @@ async function _viewIter(idx, opts = {}) {
       const prevSVG = (prevRec && prevRec.svg) || state.iterHistory[idx - 1];
       if (prevSVG) {
         prevDMap = buildPathDMap(prevSVG);
-        // Load the previous SVG and fade it onto the canvas via globalAlpha
-        // so the drawing "materialises" smoothly before the new strokes begin.
-        const prevUrl = URL.createObjectURL(new Blob([normalizeSVG(prevSVG, bounds)], {type:"image/svg+xml"}));
+        // Build the background SVG using the same per-path wrapper as _singlePathSVG
+        // (explicit width/height = SVG_NATIVE, stroke attrs set per element, no style
+        // overrides) so old and new strokes are rasterised identically.
+        const sw = artStrokeWidth(bounds);
+        const prevEl = parseSVG(prevSVG);
+        const prevPaths = prevEl ? extractStepPaths(prevEl) : [];
+        const pathsHTML = prevPaths.map(({el}) => {
+          const cl = el.cloneNode(true);
+          cl.setAttribute("stroke", ART_STROKE);
+          cl.setAttribute("stroke-width", sw);
+          cl.setAttribute("fill", "none");
+          cl.setAttribute("stroke-opacity", "1");
+          cl.setAttribute("opacity", "1");
+          cl.removeAttribute("style");
+          cl.removeAttribute("filter");
+          return cl.outerHTML;
+        }).join("");
+        const bgSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${SVG_NATIVE} ${SVG_NATIVE}" width="${SVG_NATIVE}" height="${SVG_NATIVE}"><g fill="none" stroke-linecap="round" stroke-linejoin="round">${pathsHTML}</g></svg>`;
+        const prevUrl = URL.createObjectURL(new Blob([bgSVG], {type:"image/svg+xml"}));
         const prevImg = await new Promise((res, rej) => {
           const img = new Image();
           img.onload = () => { URL.revokeObjectURL(prevUrl); res(img); };
