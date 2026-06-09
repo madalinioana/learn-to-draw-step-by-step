@@ -670,6 +670,20 @@ function panelHide() {
   setTimeout(() => RP.panel.classList.add("hidden"), 560);
 }
 
+async function _fadeOutCanvas(duration = 460) {
+  if (_panelReducedMotion()) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+  const fade = canvas.animate(
+    [{ opacity: 1 }, { opacity: 0 }],
+    { duration, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
+  );
+  try { await fade.finished; } catch (_) {}
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  canvas.style.opacity = "";
+}
+
 function panelReturnToPaper() {
   panelHide();
   if (state.activeAnimator) {
@@ -677,7 +691,7 @@ function panelReturnToPaper() {
     state.activeAnimator = null;
   }
   stopThinking();
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  _fadeOutCanvas();
   const screen = document.getElementById("thesis-landing");
   if (!screen) return;
   screen.classList.remove("gone");
@@ -1195,11 +1209,11 @@ function computeSVGBounds() {
   const x = (cw - w) / 2;
   const ink = computeSVGInkBox(activePanelSVG());
   // Position the caption just below the actual ink, not the full figure box.
-  // +30 padding on ink.y1 compensates for approxBBox underestimating curves so
-  // the caption clears the drawing without floating far beneath it.
-  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + 30) / SVG_NATIVE) * h : y + h * 0.58;
+  // +52 padding on ink.y1 compensates for approxBBox underestimating curves so
+  // the caption clears the drawing with a comfortable margin.
+  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + 52) / SVG_NATIVE) * h : y + h * 0.58;
   const desiredCaptionTop = inkBottom + gap;
-  const captionTop = Math.max(y + h * 0.52, Math.min(y + h + gap, desiredCaptionTop));
+  const captionTop = Math.max(y + h * 0.52, Math.min(y + h + gap * 1.6, desiredCaptionTop));
 
   root.setProperty("--rp-top", captionTop + "px");
   root.setProperty("--fig-dx", "0px");
@@ -2415,7 +2429,9 @@ function handleEvent(ev) {
         break;
       }
       // Auto-show the very first iteration so something appears without a click.
-      if (!_shownAny) { _shownAny = true; _viewIter(0); }
+      // loading:true gives it the same artist "thinking" wait (>= 3s) and the
+      // "artist is drawing" beam as every subsequent iteration.
+      if (!_shownAny) { _shownAny = true; _viewIter(0, { loading: true }); }
       else if (idx === _panelSel) _panelRenderDetail(idx);
       break;
     }
