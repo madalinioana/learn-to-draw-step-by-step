@@ -362,6 +362,11 @@ function _panelAnimateChange() {
 function _panelSetStatusCenter(centered) {
   if (!RP.panel) return;
   RP.panel.classList.toggle("status-center", Boolean(centered));
+  if (centered) {
+    RP.panel.style.top = Math.round(window.innerHeight / 2) + 'px';
+  } else {
+    RP.panel.style.top = '';
+  }
 }
 
 function _panelSetFeedbackShown(shown) {
@@ -1080,6 +1085,9 @@ _resizeCanvas();
 window.addEventListener("resize", () => {
   _resizeCanvas();
   computeSVGBounds();
+  if (RP.panel && RP.panel.classList.contains("status-center")) {
+    RP.panel.style.top = Math.round(window.innerHeight / 2) + 'px';
+  }
 });
 
 function computeSVGBounds() {
@@ -1096,11 +1104,13 @@ function computeSVGBounds() {
   }
 
   const isMobile = cw <= 560;
-  const reserve = isMobile ? Math.min(ch * 0.32, 220) : Math.min(ch * 0.26, 190);
-  const gap = 28;
-  const margin = isMobile ? 20 : 30;
-  const availH = Math.max(220, ch - reserve - gap - margin * 2);
-  const s = Math.min(cw / SVG_NATIVE, availH / SVG_NATIVE, MAX_FIG / SVG_NATIVE);
+  const reserve = isMobile ? Math.min(ch * 0.30, 170) : Math.min(ch * 0.26, 190);
+  const gap = isMobile ? 24 : 28;
+  const margin = isMobile ? 48 : 30;
+  // On mobile cap drawing height at 52% of viewport so there's breathing room top and bottom.
+  const maxFig = isMobile ? Math.min(MAX_FIG, Math.round(ch * 0.52)) : MAX_FIG;
+  const availH = Math.max(180, ch - reserve - gap - margin * 2);
+  const s = Math.min(cw / SVG_NATIVE, availH / SVG_NATIVE, maxFig / SVG_NATIVE);
   const w = SVG_NATIVE * s, h = SVG_NATIVE * s;
   const blockH = h + gap + reserve;
   const y = Math.max(margin, (ch - blockH) / 2);
@@ -2890,7 +2900,6 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
       });
     }
     async function loop(token) {
-      await wait(120);
       while (!_doodleAnimStop && exampleRunning && token === exampleToken) {
         // Draw stroke by stroke with restrained figure-like pacing.
         for (let i = 0; i < paths.length; i++) {
@@ -2907,7 +2916,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
           if (!exampleRunning || token !== exampleToken) return;
           if (i > 0) await wait(74);
         }
-        await wait(720);
+        await wait(320);
       }
     }
 
@@ -2932,7 +2941,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
           if (entry.isIntersecting) startExample();
           else stopExample();
         });
-      }, { threshold: 0.45, rootMargin: "0px 0px -18% 0px" });
+      }, { threshold: 0.15, rootMargin: "0px 0px 0px 0px" });
       observer.observe(target);
     } else {
       startExample();

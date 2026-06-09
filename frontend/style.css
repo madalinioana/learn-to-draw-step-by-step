@@ -1932,7 +1932,6 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   transform: translate(-50%, 0);
 }
 #run-panel.status-center {
-  top: 50dvh;
   transform: translate(-50%, calc(-50% + 8px));
 }
 #run-panel.status-center.visible {
