@@ -859,6 +859,9 @@ function panelSetLive(idx, phase) {
   if (!RP.panel) return;
   _panelRenderChips();
   if (idx !== _panelSel) return;
+  // While the drawing animation is in progress don't touch feedback display —
+  // _viewIter will show it after anim.play() resolves.
+  if (_panelDrawingReveal === idx) return;
 
   const rec = state.iterRecords[idx];
   const currentFeedback = RP.feedback ? RP.feedback.textContent : "";
@@ -868,9 +871,6 @@ function panelSetLive(idx, phase) {
     _panelDisplayFeedback(rec) &&
     /\bartist is drawing\b/i.test(currentFeedback)
   ) {
-    // If the drawing animation is still in progress, don't interrupt it —
-    // _viewIter will show feedback after anim.play() resolves.
-    if (_panelDrawingReveal === idx) return;
     _panelShowInspection(idx, _panelCriticDelay(idx, 1400), true);
     return;
   }
@@ -1593,7 +1593,7 @@ class StrokeAnimator {
       if (!unchanged) this._setLabel(label);
       await this._animStroke(el, unchanged);
       this._progress=(i+1)/total;
-      if (i<total-1&&!this._cancelled) await delay(unchanged ? 30 : 150);
+      if (i<total-1&&!this._cancelled) await delay(unchanged ? 80 : 150);
     }
     await delay(1000);
     this._setLabel("");
@@ -1638,7 +1638,7 @@ class StrokeAnimator {
       len=cl.getTotalLength(); document.body.removeChild(s);
     } catch(_){}
 
-    const dur=fast ? 220 : doodleDrawDuration(len);
+    const dur=fast ? Math.max(420, doodleDrawDuration(len) * 0.35) : doodleDrawDuration(len);
     const t0 =performance.now();
     const b  =this.bounds;
 
