@@ -372,7 +372,25 @@ function _panelSetStatusCenter(centered) {
 function _panelSetFeedbackShown(shown) {
   if (!RP.panel) return;
   const wasShown = RP.panel.classList.contains("feedback-shown");
+  // FLIP the elapsed-time row: when the score / iteration track / continue button
+  // appear, the flex row recentres and the timer would otherwise jump sideways.
+  // Capture its position first, then ease it from the old spot to the new one.
+  const stateEl = RP.panel.querySelector(".rp-state");
+  const flip = !_panelReducedMotion() && stateEl && wasShown !== Boolean(shown);
+  const beforeRect = flip ? stateEl.getBoundingClientRect() : null;
+
   RP.panel.classList.toggle("feedback-shown", Boolean(shown));
+
+  if (flip) {
+    const afterRect = stateEl.getBoundingClientRect();
+    const dx = beforeRect.left - afterRect.left;
+    if (Math.abs(dx) > 0.5) {
+      stateEl.animate(
+        [{ transform: `translateX(${dx}px)` }, { transform: "translateX(0)" }],
+        { duration: 620, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
+      );
+    }
+  }
   if (_metaRevealTimer) {
     clearTimeout(_metaRevealTimer);
     _metaRevealTimer = null;
@@ -439,14 +457,22 @@ function _panelRecordedDelay(idx, stage) {
   return 3000 + Math.round(jitter * 1000);
 }
 
+// Minimum perceived wait so the loop never feels instantaneous even when the
+// model responds very fast: the artist "thinks" for >= 3s before drawing, the
+// critic "inspects" for >= 2s before its feedback is revealed.
+const _ARTIST_MIN_WAIT_MS = 3000;
+const _CRITIC_MIN_WAIT_MS = 2000;
+
 function _panelArtistDelay(idx, fallbackMs = 650) {
   const rec = state.iterRecords[idx];
-  return rec && rec.recorded ? _panelRecordedDelay(idx, "artist") : fallbackMs;
+  const base = rec && rec.recorded ? _panelRecordedDelay(idx, "artist") : fallbackMs;
+  return Math.max(_ARTIST_MIN_WAIT_MS, base);
 }
 
 function _panelCriticDelay(idx, fallbackMs = 1750) {
   const rec = state.iterRecords[idx];
-  return rec && rec.recorded ? _panelRecordedDelay(idx, "critic") : fallbackMs;
+  const base = rec && rec.recorded ? _panelRecordedDelay(idx, "critic") : fallbackMs;
+  return Math.max(_CRITIC_MIN_WAIT_MS, base);
 }
 
 function _panelShowInspection(idx, holdMs = 1750, revealFeedback = true) {
@@ -526,30 +552,11 @@ function _panelSetFeedbackStatus(text, sig) {
   if (!RP.feedback) return;
   if (sig === _lastFeedbackSig && RP.feedback.textContent === text) return;
   const isCriticInspection = /\bcritic is inspecting\b/i.test(text);
-  const hasBeamStatus = /\bartist is drawing\b/i.test(text);
+  // Both the artist's "drawing" wait and the critic's "inspecting" wait use the
+  // same sweeping beam animation, so the two waiting states feel consistent.
+  const hasBeamStatus = /\bartist is drawing\b/i.test(text) || isCriticInspection;
   _panelStopFeedbackReveal();
   _panelSetFeedbackShown(false);
-  if (isCriticInspection && !_panelReducedMotion()) {
-    const token = ++_feedbackStreamToken;
-    const { fragment, wordIndex } = _panelBuildFeedbackWords(
-      text,
-      "rp-feedback-word rp-feedback-word--from-right"
-    );
-    _panelAnimateNoteMutation(() => {
-      if (RP.panel) RP.panel.classList.add("feedback-typesetting");
-      RP.feedback.textContent = "";
-      RP.feedback.className = "rp-feedback muted typesetting";
-      RP.feedback.appendChild(fragment);
-    });
-    const duration = 640 + wordIndex * 76;
-    _feedbackRevealTimer = setTimeout(() => {
-      if (token !== _feedbackStreamToken) return;
-      if (RP.panel) RP.panel.classList.remove("feedback-typesetting");
-      RP.feedback.className = "rp-feedback muted";
-      _feedbackRevealTimer = null;
-    }, duration);
-    return;
-  }
   _panelAnimateNoteMutation(() => {
     RP.feedback.textContent = text;
     RP.feedback.className = hasBeamStatus ? "rp-feedback muted drawing-beam" : "rp-feedback muted";
@@ -1187,11 +1194,12 @@ function computeSVGBounds() {
   const y = Math.max(margin, (ch - blockH) / 2);
   const x = (cw - w) / 2;
   const ink = computeSVGInkBox(activePanelSVG());
-  // Use +40 padding on ink.y1 to compensate for approxBBox underestimating curves.
-  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + 40) / SVG_NATIVE) * h : y + h + gap;
-  const desiredCaptionTop = ink ? inkBottom + gap : y + h + gap;
-  // Caption must always clear the bottom of the drawing area (y + h + gap).
-  const captionTop = Math.min(y + h + gap * 2, Math.max(y + h + gap, desiredCaptionTop));
+  // Position the caption just below the actual ink, not the full figure box.
+  // +30 padding on ink.y1 compensates for approxBBox underestimating curves so
+  // the caption clears the drawing without floating far beneath it.
+  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + 30) / SVG_NATIVE) * h : y + h * 0.58;
+  const desiredCaptionTop = inkBottom + gap;
+  const captionTop = Math.max(y + h * 0.52, Math.min(y + h + gap, desiredCaptionTop));
 
   root.setProperty("--rp-top", captionTop + "px");
   root.setProperty("--fig-dx", "0px");
@@ -1268,6 +1276,19 @@ function extractStepPaths(svgEl) {
   return Array.from(svgEl.querySelectorAll("path[id]"))
     .map(el => { const m=el.id.match(/^step-(\d+)$/); return m ? {id:el.id,n:parseInt(m[1],10),el,dAttr:el.getAttribute("d")||""} : null; })
     .filter(Boolean).sort((a,b)=>a.n-b.n);
+}
+
+// Split a path's `d` into its subpaths (each starting with a moveto). Returns
+// null when the path is a single subpath, or when any subpath after the first
+// uses a relative moveto (`m`) — those depend on the previous subpath's end
+// point and can't be rendered independently, so we animate the whole path.
+function splitSubpaths(d) {
+  const subs = d.match(/[Mm][^Mm]*/g);
+  if (!subs || subs.length <= 1) return null;
+  for (let i = 1; i < subs.length; i++) {
+    if (/^\s*m/.test(subs[i])) return null;
+  }
+  return subs;
 }
 
 function buildPathDMap(svgStr) {
@@ -1698,13 +1719,28 @@ class StrokeAnimator {
     });
   }
 
+  // A single <path> from the model often packs several distinct shapes into one
+  // element (e.g. both wheels as two "M …" subpaths). Animate each subpath in
+  // turn so shapes are drawn one at a time instead of all at once.
   async _animStroke(pathEl) {
+    const dAttr = pathEl.getAttribute("d") || "";
+    const subs = splitSubpaths(dAttr);
+    if (!subs) { await this._animSubStroke(pathEl, dAttr); return; }
+    for (let i = 0; i < subs.length; i++) {
+      if (this._cancelled) return;
+      await this._animSubStroke(pathEl, subs[i]);
+      if (i < subs.length - 1 && !this._cancelled) await delay(120);
+    }
+  }
+
+  async _animSubStroke(pathEl, dStr) {
     let len=200;
     try {
       const ns="http://www.w3.org/2000/svg", s=document.createElementNS(ns,"svg");
       s.setAttribute("viewBox",`0 0 ${SVG_NATIVE} ${SVG_NATIVE}`);
       s.style.cssText="position:absolute;top:-9999px;left:-9999px;visibility:hidden;width:0;height:0";
-      const cl=pathEl.cloneNode(true); s.appendChild(cl); document.body.appendChild(s);
+      const cl=pathEl.cloneNode(true); cl.setAttribute("d", dStr);
+      s.appendChild(cl); document.body.appendChild(s);
       len=cl.getTotalLength(); document.body.removeChild(s);
     } catch(_){}
 
@@ -1717,7 +1753,7 @@ class StrokeAnimator {
         if(this._cancelled){resolve();return;}
         const rawT=Math.min((now-t0)/dur,1);
         const off =lerp(len,0,doodleStrokeEase(rawT));
-        const svg =this._singlePathSVG(pathEl,len,off);
+        const svg =this._singlePathSVG(pathEl,len,off,dStr);
         const url =URL.createObjectURL(new Blob([svg],{type:"image/svg+xml"}));
         const img =new Image();
         img.onload=()=>{
@@ -1737,8 +1773,9 @@ class StrokeAnimator {
     });
   }
 
-  _singlePathSVG(pathEl, len, off) {
+  _singlePathSVG(pathEl, len, off, dOverride) {
     const cl=pathEl.cloneNode(true);
+    if (dOverride != null) cl.setAttribute("d", dOverride);
     const strokeWidth = artStrokeWidth(this.bounds);
     cl.setAttribute("stroke-dasharray",String(len));
     cl.setAttribute("stroke-dashoffset",String(off));
