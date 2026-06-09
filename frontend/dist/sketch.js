@@ -995,7 +995,17 @@ async function _viewIter(idx, opts = {}) {
       const prevSVG = (prevRec && prevRec.svg) || state.iterHistory[idx - 1];
       if (prevSVG) {
         prevDMap = buildPathDMap(prevSVG);
+        canvas.style.opacity = "0";
         await renderSVGToCanvas(prevSVG);
+        if (_panelSel !== idx) { canvas.style.opacity = ""; return; }
+        const fadeIn = canvas.animate(
+          [{ opacity: 0 }, { opacity: 1 }],
+          { duration: 520, easing: "cubic-bezier(0.16, 1, 0.3, 1)", fill: "forwards" }
+        );
+        try { await fadeIn.finished; } catch (_) {}
+        canvas.style.opacity = "";
+        if (_panelSel !== idx) return;
+        await delay(220);
         if (_panelSel !== idx) return;
       }
     }
