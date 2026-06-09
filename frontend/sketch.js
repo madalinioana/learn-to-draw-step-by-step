@@ -1067,19 +1067,23 @@ function lerpColor(a, b, t) {
 }
 
 // ── Canvas ────────────────────────────────────────────────────────────────
-canvas.width  = window.innerWidth;
-canvas.height = window.innerHeight;
+// Scale backing store by DPR so drawings are sharp on Retina / mobile HiDPI.
+const DPR = Math.round(window.devicePixelRatio || 1);
+
+function _resizeCanvas() {
+  canvas.width  = Math.round(window.innerWidth  * DPR);
+  canvas.height = Math.round(window.innerHeight * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+_resizeCanvas();
 
 window.addEventListener("resize", () => {
-  const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  ctx.putImageData(img, 0, 0);
-  computeSVGBounds();   // refresh --rp-top / figure offset for the caption
+  _resizeCanvas();
+  computeSVGBounds();
 });
 
 function computeSVGBounds() {
-  const cw = canvas.width, ch = canvas.height;
+  const cw = canvas.width / DPR, ch = canvas.height / DPR;
   const MAX_FIG = 460;
   const open = document.body.classList.contains("run-panel-open")
             && RP.panel && !RP.panel.classList.contains("hidden");
@@ -1124,7 +1128,7 @@ function svgToViewport(sx, sy, b) {
   return { x: b.x+(sx/SVG_NATIVE)*b.width, y: b.y+(sy/SVG_NATIVE)*b.height };
 }
 
-function canvasCenter() { return { x:canvas.width/2, y:canvas.height/2 }; }
+function canvasCenter() { return { x:canvas.width/(2*DPR), y:canvas.height/(2*DPR) }; }
 
 function normalizeSVG(svgStr, bounds) {
   const strokeWidth = artStrokeWidth(bounds);
