@@ -3328,8 +3328,8 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
         const cfg = await fetchConfigFrom(base);
         applyLiveConfig(cfg, base);
         return;
-      } catch (_) {
-        // Try the next loopback spelling.
+      } catch (err) {
+        console.debug("[loadLiveConfig] %s failed: %s", base, err && err.message || err);
       }
     }
     applyOfflineConfig();
