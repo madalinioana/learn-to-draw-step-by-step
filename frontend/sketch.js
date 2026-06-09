@@ -995,17 +995,31 @@ async function _viewIter(idx, opts = {}) {
       const prevSVG = (prevRec && prevRec.svg) || state.iterHistory[idx - 1];
       if (prevSVG) {
         prevDMap = buildPathDMap(prevSVG);
-        canvas.style.opacity = "0";
-        await renderSVGToCanvas(prevSVG);
-        if (_panelSel !== idx) { canvas.style.opacity = ""; return; }
-        const fadeIn = canvas.animate(
-          [{ opacity: 0 }, { opacity: 1 }],
-          { duration: 520, easing: "cubic-bezier(0.16, 1, 0.3, 1)", fill: "forwards" }
-        );
-        try { await fadeIn.finished; } catch (_) {}
-        canvas.style.opacity = "";
+        // Load the previous SVG and fade it onto the canvas via globalAlpha
+        // so the drawing "materialises" smoothly before the new strokes begin.
+        const prevUrl = URL.createObjectURL(new Blob([normalizeSVG(prevSVG, bounds)], {type:"image/svg+xml"}));
+        const prevImg = await new Promise((res, rej) => {
+          const img = new Image();
+          img.onload = () => { URL.revokeObjectURL(prevUrl); res(img); };
+          img.onerror = () => { URL.revokeObjectURL(prevUrl); rej(new Error("SVG load")); };
+          img.src = prevUrl;
+        });
         if (_panelSel !== idx) return;
-        await delay(220);
+        await new Promise(resolve => {
+          const t0 = performance.now(), dur = 560;
+          const tick = now => {
+            const t = Math.min((now - t0) / dur, 1);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.globalAlpha = ease(t);
+            ctx.drawImage(prevImg, bounds.x, bounds.y, bounds.width, bounds.height);
+            ctx.restore();
+            if (t < 1) requestAnimationFrame(tick); else resolve();
+          };
+          requestAnimationFrame(tick);
+        });
+        if (_panelSel !== idx) return;
+        await delay(240);
         if (_panelSel !== idx) return;
       }
     }
