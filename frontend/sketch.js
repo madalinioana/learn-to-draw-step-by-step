@@ -2949,7 +2949,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
           '<a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer">setup notes&nbsp;↗</a>.';
         setupMore.classList.remove("hidden");
       }
-      if (reproNote) reproNote.classList.remove("hidden");
+      if (reproNote) reproNote.classList.add("hidden");
     } else {
       if (lobbyIntro) {
         lobbyIntro.innerHTML =
@@ -3207,7 +3207,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
 
   function fetchConfigFrom(base) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 1800);
+    const timer = setTimeout(() => controller.abort(), 5000);
     return fetch(`${base}/config`, {
       signal: controller.signal,
       mode: "cors",
@@ -3246,9 +3246,13 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
       backendOptions[DEPLOYMENT_PROFILE === "hosted" ? "gemini" : "local"] = {
         id: DEPLOYMENT_PROFILE === "hosted" ? "gemini" : "local",
         label: DEPLOYMENT_PROFILE === "hosted" ? "cloud" : "local",
-        available: false,
+        available: DEPLOYMENT_PROFILE === "hosted",
         reason: "not reported by API",
       };
+    }
+    // Hosted: enable button whenever backend is reachable; missing API key surfaces as an error toast at run time.
+    if (DEPLOYMENT_PROFILE === "hosted" && backendOptions["gemini"]) {
+      backendOptions["gemini"] = Object.assign({}, backendOptions["gemini"], { available: true });
     }
     const configuredDefault =
       (cfg.runtime && cfg.runtime.default_backend) ||
@@ -3339,7 +3343,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
 
   (function scheduleRetry() {
     setTimeout(() => {
-      if (!hasLiveBackend()) loadLiveConfig().then(scheduleRetry);
+      if (!hasLiveBackend()) loadLiveConfig().then(scheduleRetry).catch(scheduleRetry);
     }, 10000);
   })();
 })();
