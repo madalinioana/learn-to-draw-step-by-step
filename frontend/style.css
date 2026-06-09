@@ -1511,7 +1511,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 }
 .tl-begin:hover { color: #000; }
 .tl-begin:hover .tl-begin-arrow { margin-left: 5px; }
-.tl-begin:disabled { color: #000; cursor: not-allowed; }
+.tl-begin:disabled { color: #bbb; cursor: not-allowed; }
 .tl-begin:disabled .tl-begin-arrow { margin-left: 0; }
 
 /* parameters — inline definition list, hairline gaps, no chrome */
@@ -1845,7 +1845,6 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .tl-repro-more a:hover { border-bottom-color: #111; }
 
 @media (max-width: 560px) {
-  .tl-prompt-input { font-size: 18px; }
   .tl-params { gap: 14px 26px; }
 }
 

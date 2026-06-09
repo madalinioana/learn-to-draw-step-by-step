@@ -2949,7 +2949,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
           '<a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer">setup notes&nbsp;↗</a>.';
         setupMore.classList.remove("hidden");
       }
-      if (reproNote) reproNote.classList.add("hidden");
+      if (reproNote) reproNote.classList.remove("hidden");
     } else {
       if (lobbyIntro) {
         lobbyIntro.innerHTML =
@@ -3336,6 +3336,12 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
   renderIter();
   renderBackend();
   loadLiveConfig();
+
+  (function scheduleRetry() {
+    setTimeout(() => {
+      if (!hasLiveBackend()) loadLiveConfig().then(scheduleRetry);
+    }, 10000);
+  })();
 })();
 
 // ── Appendix A: typewriter placeholder ──────────────────────────────────────
