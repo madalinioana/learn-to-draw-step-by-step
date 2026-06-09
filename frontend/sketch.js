@@ -242,6 +242,7 @@ let _panelInspectionTimer = null;
 let _panelInspectionToken = 0;
 let _panelRevealWatchdog = null;
 let _panelDisplayTimer = null;
+let _panelDrawWaitStart = 0;  // when the user began waiting for the current draw
 
 if (RP.continueBtn) {
   RP.continueBtn.addEventListener("click", () => {
@@ -622,6 +623,7 @@ function panelStartRun(prompt) {
   _feedbackControlsSig = "";
   _panelViewed = new Set();
   _panelDrawingReveal = null;
+  _panelDrawWaitStart = performance.now();
   _panelClearDisplayTimer();
   _panelClearRevealWatchdog();
   _panelClearInspectionPause();
@@ -942,6 +944,7 @@ async function _requestIter(idx) {
   if (!revisiting) {
     const viewRec = _iterRec(idx);
     viewRec.phase = viewRec.phase || "drawing";
+    _panelDrawWaitStart = performance.now();
     _panelStartDisplayTimer(idx);
   } else {
     _panelClearDisplayTimer(idx);
@@ -990,7 +993,7 @@ async function _viewIter(idx, opts = {}) {
     if (state.activeAnimator) { state.activeAnimator.cancel(); state.activeAnimator = null; }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
-  if (useFade || opts.transition || opts.loading || opts.force) _panelAnimateChange();
+  if ((useFade || opts.transition || opts.loading || opts.force) && !opts.initial) _panelAnimateChange();
   _panelRenderChips();
   _panelRenderDetail(idx, {
     staticFeedback: useFade,
@@ -1004,10 +1007,19 @@ async function _viewIter(idx, opts = {}) {
       await _fadeToIter(svg);
       return;
     }
-    if (opts.loading) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      await delay(_panelArtistDelay(idx, 650));
-      if (_panelSel !== idx) return;
+    // Floor the artist wait: the drawing never starts sooner than the minimum
+    // (>= 3s) after the user began waiting for this iteration, no matter how fast
+    // the model returned. On slow responses the elapsed wait already covers it,
+    // so nothing extra is added.
+    if (!_panelViewed.has(idx)) {
+      if (opts.loading) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const target = _panelArtistDelay(idx, 650);
+      const waited = _panelDrawWaitStart ? performance.now() - _panelDrawWaitStart : target;
+      const remaining = target - waited;
+      if (remaining > 0) {
+        await delay(remaining);
+        if (_panelSel !== idx) return;
+      }
     }
     _panelSetStatusCenter(false);
     await stopThinking();
@@ -1024,11 +1036,15 @@ async function _viewIter(idx, opts = {}) {
       const prevSVG = (prevRec && prevRec.svg) || state.iterHistory[idx - 1];
       if (prevSVG) {
         prevDMap = buildPathDMap(prevSVG);
-        // Build background using the same per-path wrapper as _singlePathSVG so
-        // stroke widths and rendering pipeline match the animated strokes exactly.
+        // Background holds ONLY the paths that are unchanged from the previous
+        // iteration (same id, same d). Changed / new paths are animated fresh on
+        // top, and removed paths simply aren't drawn — so there's no rectangular
+        // erase that could wipe a neighbouring shape mid-draw.
+        const curDMap = buildPathDMap(svg);
         const sw = artStrokeWidth(bounds);
         const prevEl = parseSVG(prevSVG);
-        const prevPaths = prevEl ? extractStepPaths(prevEl) : [];
+        const prevPaths = (prevEl ? extractStepPaths(prevEl) : [])
+          .filter(({id, dAttr}) => curDMap[id] === dAttr);
         const pathsHTML = prevPaths.map(({el}) => {
           const cl = el.cloneNode(true);
           cl.setAttribute("stroke", ART_STROKE);
@@ -1691,10 +1707,10 @@ class StrokeAnimator {
       const {id,el,dAttr,n}=this.stepPaths[i];
       const label   =this.steps[i]||this.steps[n-1]||"";
       const prevD   =this.prevDMap[id];
-      const isRedraw=hasPrev && prevD!==undefined && prevD!==dAttr;
       // Unchanged paths are already on canvas from the background fade — skip them.
+      // Changed / new paths animate fresh on top; the old version of a changed
+      // path was excluded from the background, so no erase is needed.
       if (hasPrev && prevD===dAttr) { this._progress=(i+1)/total; continue; }
-      if (isRedraw) await this._erasePath(id);
       this._setLabel(label);
       await this._animStroke(el);
       this._progress=(i+1)/total;
@@ -2430,8 +2446,13 @@ function handleEvent(ev) {
       }
       // Auto-show the very first iteration so something appears without a click.
       // loading:true gives it the same artist "thinking" wait (>= 3s) and the
-      // "artist is drawing" beam as every subsequent iteration.
-      if (!_shownAny) { _shownAny = true; _viewIter(0, { loading: true }); }
+      // "artist is drawing" beam; initial:true suppresses the iteration-change
+      // flash (the panel has only just appeared, so there's nothing to flip from).
+      if (!_shownAny) {
+        _shownAny = true;
+        _panelStartDisplayTimer(0);
+        _viewIter(0, { loading: true, initial: true });
+      }
       else if (idx === _panelSel) _panelRenderDetail(idx);
       break;
     }
