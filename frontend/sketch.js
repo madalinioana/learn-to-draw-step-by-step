@@ -281,9 +281,11 @@ function _panelDisplayElapsed(rec) {
   return _panelIterElapsed(rec);
 }
 
-function _panelStartDisplayTimer(idx) {
-  _panelDisplayTimer = { idx, startMs: performance.now(), endMs: null };
-  if (idx === _panelSel && RP.elapsed) RP.elapsed.textContent = "0";
+function _panelStartDisplayTimer(idx, originMs = performance.now()) {
+  _panelDisplayTimer = { idx, startMs: originMs, endMs: null };
+  if (idx === _panelSel && RP.elapsed) {
+    RP.elapsed.textContent = _fmtElapsed((performance.now() - originMs) / 1000);
+  }
   _panelEnsureClock();
 }
 
@@ -2450,7 +2452,9 @@ function handleEvent(ev) {
       // flash (the panel has only just appeared, so there's nothing to flip from).
       if (!_shownAny) {
         _shownAny = true;
-        _panelStartDisplayTimer(0);
+        // Continue the clock from run start (no reset to 0) so it counts smoothly
+        // through the artist wait, drawing and critique until feedback appears.
+        _panelStartDisplayTimer(0, _panelDrawWaitStart || performance.now());
         _viewIter(0, { loading: true, initial: true });
       }
       else if (idx === _panelSel) _panelRenderDetail(idx);
