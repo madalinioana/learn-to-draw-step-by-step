@@ -415,8 +415,13 @@ function _panelClearRevealWatchdog() {
 }
 
 function _panelExpectedRevealMs(anim) {
-  const count = Math.max(1, anim && anim.stepPaths ? anim.stepPaths.length : 1);
-  return Math.min(12000, Math.max(2600, count * 1300 + 900));
+  // Only the strokes that are actually drawn count toward the duration. Each can
+  // take up to ~2200ms to draw + 300ms erase (for redraws) + 150ms gap, plus the
+  // animator's trailing delay(1000). Use a generous per-stroke budget and a wide
+  // buffer so this watchdog only ever fires for a genuinely stalled animation —
+  // normal completion is handled by awaiting anim.play().
+  const count = Math.max(1, anim && anim.drawableCount ? anim.drawableCount() : 1);
+  return Math.min(40000, count * 2900 + 4000);
 }
 
 function _panelDisplayFeedback(rec) {
@@ -1044,16 +1049,26 @@ async function _viewIter(idx, opts = {}) {
 
     const anim = new StrokeAnimator(svg, (rec && rec.steps) || [], bounds, prevDMap);
     state.activeAnimator = anim;
-    _panelRevealWatchdog = setTimeout(() => {
-      _panelRevealWatchdog = null;
-      const liveRec = state.iterRecords[idx];
-      if (_panelSel !== idx || _panelDrawingReveal !== idx || !liveRec) return;
-      if (liveRec.phase === "critiquing" || (liveRec.phase === "drawing" && liveRec.svg)) {
-        _panelShowInspection(idx, 0, false);
-      } else if (liveRec.phase === "done" && _panelDisplayFeedback(liveRec)) {
-        _panelShowInspection(idx, _panelCriticDelay(idx, 1400), true);
-      }
-    }, _panelExpectedRevealMs(anim));
+    const armWatchdog = () => {
+      _panelClearRevealWatchdog();
+      _panelRevealWatchdog = setTimeout(() => {
+        _panelRevealWatchdog = null;
+        const liveRec = state.iterRecords[idx];
+        if (_panelSel !== idx || _panelDrawingReveal !== idx || !liveRec) return;
+        // Never preempt an animation that is still drawing — only reveal once the
+        // strokes have finished (or genuinely stalled). Re-arm and check later.
+        if (state.activeAnimator === anim && anim.getProgress() < 1) {
+          armWatchdog();
+          return;
+        }
+        if (liveRec.phase === "critiquing" || (liveRec.phase === "drawing" && liveRec.svg)) {
+          _panelShowInspection(idx, 0, false);
+        } else if (liveRec.phase === "done" && _panelDisplayFeedback(liveRec)) {
+          _panelShowInspection(idx, _panelCriticDelay(idx, 1400), true);
+        }
+      }, _panelExpectedRevealMs(anim));
+    };
+    armWatchdog();
     await anim.play();
     _panelClearRevealWatchdog();
     if (state.activeAnimator === anim) state.activeAnimator = null;
@@ -1618,6 +1633,19 @@ class StrokeAnimator {
 
   getProgress() { return this._progress; }
   cancel()       { this._cancelled=true; }
+
+  // Count paths that will actually be animated (new or changed); unchanged ones
+  // are skipped because they arrive via the static background fade.
+  drawableCount() {
+    const hasPrev = Object.keys(this.prevDMap).length > 0;
+    if (!hasPrev) return this.stepPaths.length;
+    let n = 0;
+    for (const {id,dAttr} of this.stepPaths) {
+      if (this.prevDMap[id] === dAttr) continue;   // unchanged → skipped
+      n += 1;
+    }
+    return n;
+  }
 
   async play() {
     if (!this.svgEl||!this.stepPaths.length) { await renderSVGToCanvas(this.svgStr); return; }
