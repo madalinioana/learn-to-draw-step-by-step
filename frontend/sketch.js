@@ -986,7 +986,21 @@ async function _viewIter(idx, opts = {}) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const bounds = computeSVGBounds();
     state.svgBounds = bounds; window.svgBounds = bounds;
-    const anim = new StrokeAnimator(svg, (rec && rec.steps) || [], bounds, {});
+
+    // For iteration N > 0, pre-render the previous iteration as a static
+    // background so the animator only draws what actually changed.
+    let prevDMap = {};
+    if (idx > 0) {
+      const prevRec = state.iterRecords[idx - 1];
+      const prevSVG = (prevRec && prevRec.svg) || state.iterHistory[idx - 1];
+      if (prevSVG) {
+        prevDMap = buildPathDMap(prevSVG);
+        await renderSVGToCanvas(prevSVG);
+        if (_panelSel !== idx) return;
+      }
+    }
+
+    const anim = new StrokeAnimator(svg, (rec && rec.steps) || [], bounds, prevDMap);
     state.activeAnimator = anim;
     _panelRevealWatchdog = setTimeout(() => {
       _panelRevealWatchdog = null;
@@ -1564,11 +1578,15 @@ class StrokeAnimator {
   async play() {
     if (!this.svgEl||!this.stepPaths.length) { await renderSVGToCanvas(this.svgStr); return; }
     const total=this.stepPaths.length;
+    const hasPrev=Object.keys(this.prevDMap).length>0;
     for (let i=0;i<total;i++){
       if (this._cancelled) break;
       const {id,el,dAttr,n}=this.stepPaths[i];
       const label   =this.steps[i]||this.steps[n-1]||"";
-      const isRedraw=this.prevDMap[id]!==undefined && this.prevDMap[id]!==dAttr;
+      const prevD   =this.prevDMap[id];
+      const isRedraw=hasPrev && prevD!==undefined && prevD!==dAttr;
+      // Skip paths that are identical to the previous iteration — already on canvas.
+      if (hasPrev && prevD===dAttr) { this._progress=(i+1)/total; continue; }
       if (isRedraw) await this._erasePath(id);
       this._setLabel(label);
       await this._animStroke(el);

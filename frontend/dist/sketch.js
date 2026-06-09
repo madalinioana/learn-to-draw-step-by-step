@@ -362,6 +362,11 @@ function _panelAnimateChange() {
 function _panelSetStatusCenter(centered) {
   if (!RP.panel) return;
   RP.panel.classList.toggle("status-center", Boolean(centered));
+  if (centered) {
+    RP.panel.style.top = Math.round(window.innerHeight / 2) + 'px';
+  } else {
+    RP.panel.style.top = '';
+  }
 }
 
 function _panelSetFeedbackShown(shown) {
@@ -981,7 +986,21 @@ async function _viewIter(idx, opts = {}) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const bounds = computeSVGBounds();
     state.svgBounds = bounds; window.svgBounds = bounds;
-    const anim = new StrokeAnimator(svg, (rec && rec.steps) || [], bounds, {});
+
+    // For iteration N > 0, pre-render the previous iteration as a static
+    // background so the animator only draws what actually changed.
+    let prevDMap = {};
+    if (idx > 0) {
+      const prevRec = state.iterRecords[idx - 1];
+      const prevSVG = (prevRec && prevRec.svg) || state.iterHistory[idx - 1];
+      if (prevSVG) {
+        prevDMap = buildPathDMap(prevSVG);
+        await renderSVGToCanvas(prevSVG);
+        if (_panelSel !== idx) return;
+      }
+    }
+
+    const anim = new StrokeAnimator(svg, (rec && rec.steps) || [], bounds, prevDMap);
     state.activeAnimator = anim;
     _panelRevealWatchdog = setTimeout(() => {
       _panelRevealWatchdog = null;
@@ -1067,19 +1086,26 @@ function lerpColor(a, b, t) {
 }
 
 // ── Canvas ────────────────────────────────────────────────────────────────
-canvas.width  = window.innerWidth;
-canvas.height = window.innerHeight;
+// Scale backing store by DPR so drawings are sharp on Retina / mobile HiDPI.
+const DPR = Math.round(window.devicePixelRatio || 1);
+
+function _resizeCanvas() {
+  canvas.width  = Math.round(window.innerWidth  * DPR);
+  canvas.height = Math.round(window.innerHeight * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+_resizeCanvas();
 
 window.addEventListener("resize", () => {
-  const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  ctx.putImageData(img, 0, 0);
-  computeSVGBounds();   // refresh --rp-top / figure offset for the caption
+  _resizeCanvas();
+  computeSVGBounds();
+  if (RP.panel && RP.panel.classList.contains("status-center")) {
+    RP.panel.style.top = Math.round(window.innerHeight / 2) + 'px';
+  }
 });
 
 function computeSVGBounds() {
-  const cw = canvas.width, ch = canvas.height;
+  const cw = canvas.width / DPR, ch = canvas.height / DPR;
   const MAX_FIG = 460;
   const open = document.body.classList.contains("run-panel-open")
             && RP.panel && !RP.panel.classList.contains("hidden");
@@ -1091,19 +1117,22 @@ function computeSVGBounds() {
     return { x:(cw - w) / 2, y:(ch - h) / 2, width:w, height:h, scale:s };
   }
 
-  const reserve = Math.min(ch * 0.26, 190);
-  const gap = 20;
-  const margin = 30;
-  const availH = Math.max(220, ch - reserve - gap - margin * 2);
-  const s = Math.min(cw / SVG_NATIVE, availH / SVG_NATIVE, MAX_FIG / SVG_NATIVE);
+  const isMobile = cw <= 560;
+  const reserve = isMobile ? Math.min(ch * 0.30, 170) : Math.min(ch * 0.26, 190);
+  const gap = isMobile ? 24 : 28;
+  const margin = isMobile ? 48 : 30;
+  // On mobile cap drawing height at 52% of viewport so there's breathing room top and bottom.
+  const maxFig = isMobile ? Math.min(MAX_FIG, Math.round(ch * 0.52)) : MAX_FIG;
+  const availH = Math.max(180, ch - reserve - gap - margin * 2);
+  const s = Math.min(cw / SVG_NATIVE, availH / SVG_NATIVE, maxFig / SVG_NATIVE);
   const w = SVG_NATIVE * s, h = SVG_NATIVE * s;
   const blockH = h + gap + reserve;
   const y = Math.max(margin, (ch - blockH) / 2);
   const x = (cw - w) / 2;
   const ink = computeSVGInkBox(activePanelSVG());
-  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + 6) / SVG_NATIVE) * h : y + h * 0.56;
+  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + 24) / SVG_NATIVE) * h : y + h * 0.56;
   const desiredCaptionTop = ink ? inkBottom + gap : y + h * 0.52;
-  const captionTop = Math.max(y + h * 0.34, Math.min(y + h + gap, desiredCaptionTop));
+  const captionTop = Math.max(y + h * 0.60, Math.min(y + h + gap, desiredCaptionTop));
 
   root.setProperty("--rp-top", captionTop + "px");
   root.setProperty("--fig-dx", "0px");
@@ -1123,7 +1152,7 @@ function svgToViewport(sx, sy, b) {
   return { x: b.x+(sx/SVG_NATIVE)*b.width, y: b.y+(sy/SVG_NATIVE)*b.height };
 }
 
-function canvasCenter() { return { x:canvas.width/2, y:canvas.height/2 }; }
+function canvasCenter() { return { x:canvas.width/(2*DPR), y:canvas.height/(2*DPR) }; }
 
 function normalizeSVG(svgStr, bounds) {
   const strokeWidth = artStrokeWidth(bounds);
@@ -1549,11 +1578,15 @@ class StrokeAnimator {
   async play() {
     if (!this.svgEl||!this.stepPaths.length) { await renderSVGToCanvas(this.svgStr); return; }
     const total=this.stepPaths.length;
+    const hasPrev=Object.keys(this.prevDMap).length>0;
     for (let i=0;i<total;i++){
       if (this._cancelled) break;
       const {id,el,dAttr,n}=this.stepPaths[i];
       const label   =this.steps[i]||this.steps[n-1]||"";
-      const isRedraw=this.prevDMap[id]!==undefined && this.prevDMap[id]!==dAttr;
+      const prevD   =this.prevDMap[id];
+      const isRedraw=hasPrev && prevD!==undefined && prevD!==dAttr;
+      // Skip paths that are identical to the previous iteration — already on canvas.
+      if (hasPrev && prevD===dAttr) { this._progress=(i+1)/total; continue; }
       if (isRedraw) await this._erasePath(id);
       this._setLabel(label);
       await this._animStroke(el);
@@ -2358,6 +2391,7 @@ function handleEvent(ev) {
 // ── SSE connection ────────────────────────────────────────────────────────
 function startGeneration(prompt) {
   abortDemo();
+  hidePromptUI();
   const dismissMs = landingFadeOut();
   transition("preparing");
   state.currentIteration=0; state.currentSVG=null; state.previousSVG=null;
@@ -2651,7 +2685,7 @@ function initLandingDoodles() {
 // Selected iteration count from the landing stepper, sent to /generate.
 let SELECTED_ITERATIONS = 4;
 let SELECTED_BACKEND = "local";
-let DEPLOYMENT_PROFILE = "local";
+let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
 
 (function initThesisLanding() {
   const screen      = document.getElementById("thesis-landing");
@@ -2884,7 +2918,6 @@ let DEPLOYMENT_PROFILE = "local";
       });
     }
     async function loop(token) {
-      await wait(120);
       while (!_doodleAnimStop && exampleRunning && token === exampleToken) {
         // Draw stroke by stroke with restrained figure-like pacing.
         for (let i = 0; i < paths.length; i++) {
@@ -2901,7 +2934,7 @@ let DEPLOYMENT_PROFILE = "local";
           if (!exampleRunning || token !== exampleToken) return;
           if (i > 0) await wait(74);
         }
-        await wait(720);
+        await wait(320);
       }
     }
 
@@ -2926,7 +2959,7 @@ let DEPLOYMENT_PROFILE = "local";
           if (entry.isIntersecting) startExample();
           else stopExample();
         });
-      }, { threshold: 0.45, rootMargin: "0px 0px -18% 0px" });
+      }, { threshold: 0.15, rootMargin: "0px 0px 0px 0px" });
       observer.observe(target);
     } else {
       startExample();
@@ -3207,7 +3240,7 @@ let DEPLOYMENT_PROFILE = "local";
 
   function fetchConfigFrom(base) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 1800);
+    const timer = setTimeout(() => controller.abort(), 5000);
     return fetch(`${base}/config`, {
       signal: controller.signal,
       mode: "cors",
@@ -3226,7 +3259,6 @@ let DEPLOYMENT_PROFILE = "local";
 
   function applyLiveConfig(cfg, base) {
     API_BASE = base;
-    DEPLOYMENT_PROFILE = cfg.profile || "local";
     document.body.dataset.deploymentProfile = DEPLOYMENT_PROFILE;
     featureFlags = Object.assign({
       live: true,
@@ -3247,9 +3279,13 @@ let DEPLOYMENT_PROFILE = "local";
       backendOptions[DEPLOYMENT_PROFILE === "hosted" ? "gemini" : "local"] = {
         id: DEPLOYMENT_PROFILE === "hosted" ? "gemini" : "local",
         label: DEPLOYMENT_PROFILE === "hosted" ? "cloud" : "local",
-        available: false,
+        available: DEPLOYMENT_PROFILE === "hosted",
         reason: "not reported by API",
       };
+    }
+    // Hosted: enable button whenever backend is reachable; missing API key surfaces as an error toast at run time.
+    if (DEPLOYMENT_PROFILE === "hosted" && backendOptions["gemini"]) {
+      backendOptions["gemini"] = Object.assign({}, backendOptions["gemini"], { available: true });
     }
     const configuredDefault =
       (cfg.runtime && cfg.runtime.default_backend) ||
@@ -3281,13 +3317,12 @@ let DEPLOYMENT_PROFILE = "local";
   }
 
   function applyOfflineConfig() {
-    DEPLOYMENT_PROFILE = "local";
     document.body.dataset.deploymentProfile = DEPLOYMENT_PROFILE;
     featureFlags = {
       live: true,
       recorded: false,
       backend_picker: false,
-      show_model_names: true,
+      show_model_names: DEPLOYMENT_PROFILE === "local",
     };
     runtimeInfo = {};
     backendOptions = {
@@ -3326,8 +3361,8 @@ let DEPLOYMENT_PROFILE = "local";
         const cfg = await fetchConfigFrom(base);
         applyLiveConfig(cfg, base);
         return;
-      } catch (_) {
-        // Try the next loopback spelling.
+      } catch (err) {
+        console.debug("[loadLiveConfig] %s failed: %s", base, err && err.message || err);
       }
     }
     applyOfflineConfig();
@@ -3338,6 +3373,12 @@ let DEPLOYMENT_PROFILE = "local";
   renderIter();
   renderBackend();
   loadLiveConfig();
+
+  (function scheduleRetry() {
+    setTimeout(() => {
+      if (!hasLiveBackend()) loadLiveConfig().then(scheduleRetry).catch(scheduleRetry);
+    }, 10000);
+  })();
 })();
 
 // ── Appendix A: typewriter placeholder ──────────────────────────────────────
