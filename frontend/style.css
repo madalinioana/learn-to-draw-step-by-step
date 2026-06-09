@@ -1845,9 +1845,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .tl-repro-more a:hover { border-bottom-color: #111; }
 
 @media (max-width: 560px) {
-  .tl-repro-field { flex-wrap: wrap; gap: 6px 0; }
-  .tl-prompt-input { order: 3; flex-basis: 100%; font-size: 18px; }
-  .tl-begin { order: 4; flex-basis: 100%; text-align: right; }
+  .tl-prompt-input { font-size: 18px; }
   .tl-params { gap: 14px 26px; }
 }
 
