@@ -3128,14 +3128,12 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
       if (setupText) setupText.classList.add("hidden");
       if (setupCode) setupCode.classList.add("hidden");
       if (setupMore) {
-        const model = cloudModelName
-          ? '<code>' + htmlEscape(cloudModelName) + '</code>'
-          : 'a lightweight cloud model';
+        const model = cloudModelName ? "<code>" + htmlEscape(cloudModelName) + "</code>" : "a lightweight cloud model";
         setupMore.innerHTML =
-          'The hosted demo runs on ' + model + ', chosen for fast inference, so its ' +
-          'drawings are noticeably weaker than the larger models used for the thesis’s ' +
-          'local experiments. For full-quality local inference, see the ' +
-          '<a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer">setup notes&nbsp;↗</a>.';
+          'Live cloud runs use ' + model + ', chosen for fast inference, so the drawings ' +
+          'are noticeably weaker than the larger models used in the thesis&#8217;s local ' +
+          'experiments. For full-quality local inference, see the ' +
+          '<a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer">setup notes&nbsp;&nearr;</a>.';
         setupMore.classList.remove("hidden");
       }
       if (reproNote) reproNote.classList.add("hidden");
@@ -3157,7 +3155,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
       if (setupMore) {
         setupMore.innerHTML =
           'Full setup is in the ' +
-          '<a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer">setup notes&nbsp;↗</a>.';
+          '<a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer">setup notes&nbsp;&nearr;</a>.';
         setupMore.classList.remove("hidden");
       }
       if (reproNote) reproNote.classList.remove("hidden");
