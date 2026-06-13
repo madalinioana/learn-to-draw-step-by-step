@@ -42,14 +42,18 @@
         <div class="tl-abstract-label">Abstract</div>
         <p class="tl-abstract">
           An <strong>Artist</strong> language model writes an SVG sketch from a text
-          prompt. It cannot see. A separate <strong>Critic</strong> vision model looks at
-          the rendered drawing and describes, in plain language, what is wrong. The Artist
-          revises and the loop repeats. This work investigates whether a vision model can
-          measurably improve the output of a text-only model with which it shares no
-          weights, no architecture, and no training data.
+          prompt; being text-only, it never sees what it drew. A separate
+          <strong>Critic</strong> vision model looks at the rendered image and answers in
+          plain language, naming a single region to fix next. The Artist revises and the
+          loop repeats. The hard part is regression: acting on the Critic's notes, a naive
+          Artist often damages parts that were already correct. The contribution of this
+          work is a code-enforced <strong>region lock</strong> that confines every revision
+          to the one region the Critic named, so earlier progress is kept by construction
+          and the drawing can only improve from step to step. The gain over a single
+          pass is real, but bounded by how capable the underlying models are.
         </p>
       </div>
-      <p class="tl-keywords"><span>Keywords.</span> multimodal critique; SVG generation; iterative refinement; text-only drawing</p>
+      <p class="tl-keywords"><span>Keywords.</span> Artist–Critic loop; region lock; monotonic refinement; SVG generation; vision–language critique</p>
       <p class="tl-method-equation">
         <span>prompt → Artist → SVG → render → Critic → feedback</span>
         <span class="tl-equation-num">(1)</span>
@@ -124,7 +128,7 @@
             <rect x="446" y="252" width="178" height="112"/>
             <text class="tl-sys-node-title" x="535" y="294">Critic</text>
             <text class="tl-sys-node-role" x="535" y="317">vision model</text>
-            <text class="tl-sys-node-mode" x="535" y="337">image -> text</text>
+            <text class="tl-sys-node-mode" x="535" y="337">image -> JSON</text>
           </g>
 
           <g class="tl-sys-node tl-sys-node--feedback">
@@ -141,7 +145,7 @@
           </g>
 
         </svg>
-        <figcaption><span>Figure 1.</span> Typed agent graph. The Artist writes SVG, the renderer produces pixels, and the Critic returns only score, verdict, and prose feedback for the next iteration.</figcaption>
+        <figcaption><span>Figure 1.</span> Typed agent graph. The Artist writes SVG, the renderer produces pixels, and the Critic returns a structured judgment — score, verdict, and one localized correction (a single action and target region) — that drives the next iteration.</figcaption>
       </figure>
       <p class="tl-interface-equation">
         <span><em>s</em><sub>t</sub> = <em>A</em>(<em>p</em>, <em>f</em><sub>t</sub>),&nbsp;&nbsp;
@@ -150,8 +154,11 @@
         <span class="tl-equation-num">(2)</span>
       </p>
       <p class="tl-interface-note">
-        The interface is intentionally narrow: the Artist emits SVG, while the Critic
-        emits only scalar judgment and prose.
+        The interface is deliberately narrow. The Artist emits SVG; the Critic replies
+        with a score, a verdict, and exactly one correction tied to a named region. That
+        named region is what makes <em>region lock</em> possible: every path the Critic
+        does not name is frozen in code, byte for byte, so a revision can only add to or
+        refine the drawing — never quietly undo what already works.
       </p>
     </section>
 
@@ -162,22 +169,24 @@
         <figcaption><span>Algorithm 1.</span> Critic-guided SVG refinement.</figcaption>
         <ol class="tl-algorithm-steps">
           <li><span class="tl-algorithm-line">1</span><span><strong>Input:</strong> text prompt <em>p</em>, maximum iterations <em>T</em></span></li>
-          <li><span class="tl-algorithm-line">2</span><span>Initialize feedback <em>f</em> as the empty string.</span></li>
+          <li><span class="tl-algorithm-line">2</span><span>Initialize feedback <em>f</em> as the empty string, target region <em>g</em> as none.</span></li>
           <li><span class="tl-algorithm-line">3</span><span><strong>for</strong> <em>t</em> = 1, ..., <em>T</em> <strong>do</strong></span></li>
           <li><span class="tl-algorithm-line">4</span><span class="tl-algorithm-indent">Artist writes SVG from <em>p</em> and previous feedback <em>f</em>.</span></li>
-          <li><span class="tl-algorithm-line">5</span><span class="tl-algorithm-indent">Render SVG to a raster image.</span></li>
-          <li><span class="tl-algorithm-line">6</span><span class="tl-algorithm-indent">Critic assigns score, verdict, and natural-language feedback.</span></li>
-          <li><span class="tl-algorithm-line">7</span><span class="tl-algorithm-indent"><strong>if</strong> verdict is <em>accept</em> <strong>then return</strong> drawing.</span></li>
-          <li><span class="tl-algorithm-line">8</span><span class="tl-algorithm-indent">Set <em>f</em> to the Critic feedback.</span></li>
-          <li><span class="tl-algorithm-line">9</span><span><strong>end for</strong></span></li>
-          <li><span class="tl-algorithm-line">10</span><span><strong>return</strong> final drawing and Critic report.</span></li>
+          <li><span class="tl-algorithm-line">5</span><span class="tl-algorithm-indent"><strong>Region lock:</strong> outside region <em>g</em>, restore the previous iteration's geometry.</span></li>
+          <li><span class="tl-algorithm-line">6</span><span class="tl-algorithm-indent">Render the locked SVG to a raster image.</span></li>
+          <li><span class="tl-algorithm-line">7</span><span class="tl-algorithm-indent">Critic returns score, verdict, feedback, and one target region.</span></li>
+          <li><span class="tl-algorithm-line">8</span><span class="tl-algorithm-indent"><strong>if</strong> <em>accept</em>, score &#8805; 9, and every required part is present <strong>then return</strong> drawing.</span></li>
+          <li><span class="tl-algorithm-line">9</span><span class="tl-algorithm-indent">Set <em>f</em> and <em>g</em> to the Critic's feedback and target region.</span></li>
+          <li><span class="tl-algorithm-line">10</span><span><strong>end for</strong></span></li>
+          <li><span class="tl-algorithm-line">11</span><span><strong>return</strong> final drawing and Critic report.</span></li>
         </ol>
       </figure>
       <p class="tl-loop-caption">
         <span class="tl-caption-prefix">Note.</span>
-        The Artist never sees the image; it only ever reads the
-        Critic’s words. The run halts when the Critic accepts the drawing or the
-        iteration cap is reached.
+        The Artist never sees the image; it only ever reads the Critic’s words. Because a
+        revision is confined to the one region the Critic named, accepted strokes carry
+        over untouched. The run halts only on a clear accept — a high score with every
+        required part present — or when the iteration cap is reached.
       </p>
     </section>
 
@@ -232,9 +241,11 @@
     <div class="tl-section-label" id="tl-evaluation"><span class="tl-section-num">4.</span><span>Evaluation signal</span></div>
     <section class="tl-result">
       <p class="tl-result-lead">
-        Every iteration is scored <strong>0-10</strong> by the Critic, which also returns a
-        verdict: <em>revise</em> or <em>accept</em>. The loop is useful when the
-        score rises under critique while the final verdict changes state.
+        Every iteration is scored <strong>1-10</strong> by the Critic, which also returns a
+        verdict: <em>revise</em> or <em>accept</em>. Region lock guarantees that accepted
+        geometry is never lost, so the drawing only gains detail; the score trends upward
+        as it does, though it can wobble between steps because the Critic's reading is
+        itself noisy.
       </p>
 
       <figure class="tl-eval-figure" aria-label="Critic score trajectory">
@@ -243,8 +254,8 @@
           <span>
             In the representative run,
             <em>r</em> = (4, 6, 7, 9) and
-            <em>v</em><sub>4</sub> = <em>accept</em>; prose feedback is the only
-            signal returned to the Artist.
+            <em>v</em><sub>4</sub> = <em>accept</em>; the Critic's localized note — one
+            region to fix — is the only signal returned to the Artist.
           </span>
         </div>
 
@@ -819,6 +830,6 @@
 
 <script src="config.js?v=2"></script>
 <script src="demo.js?v=36"></script>
-<script src="sketch.js?v=160"></script>
+<script src="sketch.js?v=161"></script>
 </body>
 </html>

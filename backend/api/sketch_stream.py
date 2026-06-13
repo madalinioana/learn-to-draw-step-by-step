@@ -273,6 +273,9 @@ async def config() -> dict:
         "max_iterations": MAX_ITERATIONS,
         "iterations_min": 1,
         "iterations_max": 8,
+        # Display-only: the lightweight cloud model behind the hosted demo. Shown
+        # with a quality caveat in the UI; not the (larger) local thesis models.
+        "cloud_model": GEMINI_ARTIST_MODEL,
     }
     if show_model_names:
         local = _local_backend_option()

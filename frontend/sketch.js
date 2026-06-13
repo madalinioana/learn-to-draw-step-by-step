@@ -2880,6 +2880,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
     show_model_names: true,
   };
   let runtimeInfo = {};
+  let cloudModelName = "";
 
   function initPaperMotion() {
     const reduceMotion = window.matchMedia &&
@@ -3127,8 +3128,13 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
       if (setupText) setupText.classList.add("hidden");
       if (setupCode) setupCode.classList.add("hidden");
       if (setupMore) {
+        const model = cloudModelName
+          ? '<code>' + htmlEscape(cloudModelName) + '</code>'
+          : 'a lightweight cloud model';
         setupMore.innerHTML =
-          'For local inference, see the ' +
+          'The hosted demo runs on ' + model + ', chosen for fast inference, so its ' +
+          'drawings are noticeably weaker than the larger models used for the thesis’s ' +
+          'local experiments. For full-quality local inference, see the ' +
           '<a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer">setup notes&nbsp;↗</a>.';
         setupMore.classList.remove("hidden");
       }
@@ -3417,6 +3423,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
       show_model_names: DEPLOYMENT_PROFILE === "local",
     }, cfg.features || {});
     runtimeInfo = cfg.runtime || {};
+    cloudModelName = cfg.cloud_model || cloudModelName;
     iterMin = cfg.iterations_min ?? 1;
     iterMax = cfg.iterations_max ?? 8;
     SELECTED_ITERATIONS = Math.min(Math.max(cfg.max_iterations ?? 4, iterMin), iterMax);
