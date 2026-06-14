@@ -1353,8 +1353,8 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   stroke-width: 0.9px;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 900;
-  stroke-dashoffset: 900;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
   opacity: 0;
 }
 .tl-eval-dot {
@@ -1383,11 +1383,11 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   color: #000;
 }
 @keyframes tlEvalTraceLoop {
-  0%, 8%    { opacity: 0;    stroke-dashoffset: 900; }
+  0%, 8%    { opacity: 0;    stroke-dashoffset: 600; }
   12%       { opacity: 0.95; }
   42%, 58%  { opacity: 0.95; stroke-dashoffset: 0; }
-  90%       { opacity: 0.95; stroke-dashoffset: 900; }
-  100%      { opacity: 0;    stroke-dashoffset: 900; }
+  90%       { opacity: 0.95; stroke-dashoffset: 600; }
+  100%      { opacity: 0;    stroke-dashoffset: 600; }
 }
 
 @media (max-width: 720px) {
