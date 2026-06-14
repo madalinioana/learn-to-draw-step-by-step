@@ -145,7 +145,7 @@
           </g>
 
         </svg>
-        <figcaption><span>Figure 1.</span> Typed agent graph. The Artist writes SVG, the renderer produces pixels, and the Critic returns a structured judgment — score, verdict, and one localized correction (a single action and target region) — that drives the next iteration.</figcaption>
+        <figcaption><span>Figure 1.</span> Typed agent graph. The Artist writes SVG, the renderer produces pixels, and the Critic returns a structured judgment (a score, a verdict, and one localized correction naming a single action and target region) that drives the next iteration.</figcaption>
       </figure>
       <p class="tl-interface-equation">
         <span><em>s</em><sub>t</sub> = <em>A</em>(<em>p</em>, <em>f</em><sub>t</sub>),&nbsp;&nbsp;
@@ -156,9 +156,9 @@
       <p class="tl-interface-note">
         The interface is deliberately narrow. The Artist emits SVG; the Critic replies
         with a score, a verdict, and exactly one correction tied to a named region. That
-        named region is what makes <em>region lock</em> possible: every path the Critic
+        named region is what <em>region lock</em> relies on: every path the Critic
         does not name is frozen in code, byte for byte, so a revision can only add to or
-        refine the drawing — never quietly undo what already works.
+        refine the drawing. It cannot quietly undo work that is already correct.
       </p>
     </section>
 
@@ -185,8 +185,8 @@
         <span class="tl-caption-prefix">Note.</span>
         The Artist never sees the image; it only ever reads the Critic’s words. Because a
         revision is confined to the one region the Critic named, accepted strokes carry
-        over untouched. The run halts only on a clear accept — a high score with every
-        required part present — or when the iteration cap is reached.
+        over untouched. The run halts only on a clear accept, meaning a high score with
+        every required part present, or when the iteration cap is reached.
       </p>
     </section>
 
@@ -194,10 +194,10 @@
     <div class="tl-section-label" id="tl-example"><span class="tl-section-num">3.</span><span>Qualitative example</span></div>
     <section class="tl-example">
       <p class="tl-example-lead">
-        A representative pass of the loop. The Artist sketches the subject stroke by stroke;
+        A single pass of the loop. The Artist sketches the subject stroke by stroke;
         the Critic looks at the result and answers in plain words. This is iteration
-        three of a run on <em>“a cat”</em> — the drawing now reads clearly,
-        but still needs one more refinement pass.
+        three of a run on <em>“a cat”</em>: the drawing now reads clearly,
+        but it still needs one more refinement pass.
       </p>
       <figure class="tl-example-figure">
         <div class="tl-example-panels">
@@ -243,11 +243,10 @@
       <p class="tl-result-lead">
         The central contribution of this work is the <strong>region lock</strong> mechanism:
         once the Critic accepts a named region, that geometry is frozen in code and cannot
-        be overwritten by any subsequent Artist revision. This structural guarantee is what
-        makes the score sequence non-decreasing — not a property of the model, but a
-        property of the loop. The graph below captures exactly this: monotonically
-        improving Critic scores across iterations, enforced by region lock rather than
-        inferred from training.
+        be overwritten by any later Artist revision. The guarantee is structural, so the
+        score sequence cannot decrease; this follows from the loop, not from the model.
+        The graph below shows the result: Critic scores that rise across iterations because
+        region lock enforces it, not because the model was trained to produce that.
       </p>
 
       <figure class="tl-eval-figure" aria-label="Critic score trajectory">
@@ -256,7 +255,7 @@
           <span>
             Region lock produces a non-decreasing score sequence. In the representative
             run, <em>r</em> = (3, 4, 5, 6, 7, 7, 8, 9); the plateau at
-            <em>r</em>&thinsp;=&thinsp;7 reflects the Artist requiring two passes to
+            <em>r</em>&thinsp;=&thinsp;7 is where the Artist needed two passes to
             improve a locked region before the Critic issues <em>accept</em> at
             <em>t</em>&thinsp;=&thinsp;8.
           </span>
@@ -317,7 +316,7 @@
           <a href="thesis.pdf" target="_blank" rel="noreferrer"><em>Sequential Generation of Vector Drawings via an Artist–Critic Loop.</em></a> Bachelor's thesis, Univ. Bucharest, 2026.
         </li>
         <li>
-          <a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer"><em>learn-to-draw-step-by-step</em></a> — source code. GitHub, 2026.
+          <a href="https://github.com/madalinioana/learn-to-draw-step-by-step" target="_blank" rel="noreferrer"><em>learn-to-draw-step-by-step</em></a>. Source code, GitHub, 2026.
         </li>
       </ol>
     </section>
@@ -326,7 +325,7 @@
     <div class="tl-section-label tl-section-label--appendix" id="tl-trial"><span class="tl-section-num">A.</span><span>Interactive reproduction</span></div>
     <section class="tl-lobby">
       <p class="tl-lobby-intro" id="tl-lobby-intro">
-        This page also serves as a small reproduction cell. <em>Live</em> runs
+        This page is also a small reproduction cell. <em>Live</em> runs
         stream stroke by stroke from the inference backend.
       </p>
 
