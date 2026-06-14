@@ -3118,7 +3118,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
           if (entry.isIntersecting) startExample();
           else stopExample();
         });
-      }, { threshold: 0.15, rootMargin: "0px 0px 0px 0px" });
+      }, { threshold: 0.35, rootMargin: "0px 0px 0px 0px" });
       observer.observe(target);
     } else {
       startExample();
