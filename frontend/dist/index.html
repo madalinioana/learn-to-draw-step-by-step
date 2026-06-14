@@ -263,36 +263,38 @@
           <svg class="tl-eval-svg" viewBox="0 0 720 338" xmlns="http://www.w3.org/2000/svg">
             <g class="tl-eval-plot" transform="translate(92 34)">
               <path class="tl-eval-grid" d="M 0 45 H 540 M 0 90 H 540 M 0 135 H 540"/>
-              <path class="tl-eval-axis" d="M 0 0 V 180 H 540"/>
-              <path class="tl-eval-ticks" d="M 0 180 v 5 M 180 180 v 5 M 360 180 v 5 M 540 180 v 5 M -5 0 h 5 M -5 90 h 5 M -5 180 h 5"/>
+              <!-- axis: overshoot 10px past last point on x, 12px above on y -->
+              <path class="tl-eval-axis" d="M 0 -12 V 180 H 550"/>
+              <!-- ticks pointing outward (negative direction) -->
+              <path class="tl-eval-ticks" d="M 0 180 v 6 M 180 180 v 6 M 360 180 v 6 M 540 180 v 6 M 0 0 h -6 M 0 90 h -6 M 0 180 h -6"/>
 
               <g class="tl-eval-y">
-                <text x="-20" y="5">10</text>
-                <text x="-20" y="95">5</text>
-                <text x="-20" y="185">0</text>
+                <text x="-14" y="4">10</text>
+                <text x="-14" y="94">5</text>
+                <text x="-14" y="184">0</text>
               </g>
               <g class="tl-eval-x">
-                <text x="0" y="207">1</text>
-                <text x="180" y="207">2</text>
-                <text x="360" y="207">3</text>
-                <text x="540" y="207">4</text>
+                <text x="0" y="204">1</text>
+                <text x="180" y="204">2</text>
+                <text x="360" y="204">3</text>
+                <text x="540" y="204">4</text>
               </g>
 
               <text class="tl-eval-y-label" x="-58" y="90" transform="rotate(-90 -58 90)">score r_t</text>
-              <text class="tl-eval-x-label" x="270" y="256">iteration t</text>
+              <text class="tl-eval-x-label" x="270" y="248">iteration t</text>
 
               <path class="tl-eval-line" d="M 0 108 L 180 72 L 360 54 L 540 18"/>
               <path class="tl-eval-line-reveal" d="M 0 108 L 180 72 L 360 54 L 540 18"/>
-              <circle class="tl-eval-dot tl-eval-dot--1" cx="0" cy="108" r="2.8"/>
-              <circle class="tl-eval-dot tl-eval-dot--2" cx="180" cy="72" r="2.8"/>
-              <circle class="tl-eval-dot tl-eval-dot--3" cx="360" cy="54" r="2.8"/>
-              <circle class="tl-eval-dot tl-eval-dot--4" cx="540" cy="18" r="2.8"/>
+              <circle class="tl-eval-dot tl-eval-dot--1" cx="0" cy="108" r="4"/>
+              <circle class="tl-eval-dot tl-eval-dot--2" cx="180" cy="72" r="4"/>
+              <circle class="tl-eval-dot tl-eval-dot--3" cx="360" cy="54" r="4"/>
+              <circle class="tl-eval-dot tl-eval-dot--4" cx="540" cy="18" r="4"/>
 
               <g class="tl-eval-data-labels">
-                <text x="34" y="128">r_1 = 4</text>
-                <text x="180" y="58">r_2 = 6</text>
-                <text x="360" y="40">r_3 = 7</text>
-                <text x="540" y="4">r_4 = 9</text>
+                <text x="28" y="128">r_1 = 4</text>
+                <text x="176" y="56">r_2 = 6</text>
+                <text x="356" y="38">r_3 = 7</text>
+                <text x="504" y="10">r_4 = 9</text>
               </g>
 
               <g class="tl-eval-verdicts">

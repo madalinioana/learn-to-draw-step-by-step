@@ -1336,15 +1336,15 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 }
 .tl-eval-line {
   stroke: #111;
-  stroke-width: 1px;
+  stroke-width: 1.6px;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dashoffset: 0;
-  opacity: 0.22;
+  opacity: 0.18;
 }
 .tl-eval-line-reveal {
   stroke: #111;
-  stroke-width: 1.15px;
+  stroke-width: 1.6px;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 900;
@@ -1352,9 +1352,9 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   opacity: 0;
 }
 .tl-eval-dot {
-  fill: #111;
+  fill: #fff;
   stroke: #111;
-  stroke-width: 0.9px;
+  stroke-width: 1.6px;
   vector-effect: non-scaling-stroke;
   transform-box: fill-box;
   transform-origin: center;
