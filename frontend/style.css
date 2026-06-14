@@ -1836,7 +1836,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   font-size: 15px;
   color: #000;
 }
-.tl-repro-more code { font-size: 0.82em; font-weight: 700; }
+.tl-repro-more code { font-size: 0.82em; font-weight: 500; }
 .tl-repro-more a {
   color: #000;
   text-decoration: none;
