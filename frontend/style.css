@@ -1346,7 +1346,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dashoffset: 0;
-  opacity: 0.18;
+  opacity: 0;
 }
 .tl-eval-line-reveal {
   stroke: #000;
@@ -1862,7 +1862,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   .tl-backend-state.ok strong {
     animation: none !important;
   }
-  .tl-eval-line { stroke-dashoffset: 0; }
+  .tl-eval-line { stroke-dashoffset: 0; opacity: 0.18; }
   .tl-eval-line-reveal { opacity: 0; }
   .tl-eval-dot { opacity: 1; transform: scale(1); }
   /* §A reproduction cell: keep everything static */
