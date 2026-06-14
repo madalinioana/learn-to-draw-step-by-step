@@ -1335,16 +1335,16 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   font-weight: 600;
 }
 .tl-eval-line {
-  stroke: #111;
-  stroke-width: 1.6px;
+  stroke: #000;
+  stroke-width: 0.9px;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dashoffset: 0;
   opacity: 0.18;
 }
 .tl-eval-line-reveal {
-  stroke: #111;
-  stroke-width: 1.6px;
+  stroke: #000;
+  stroke-width: 0.9px;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 900;
@@ -1352,9 +1352,8 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   opacity: 0;
 }
 .tl-eval-dot {
-  fill: #fff;
-  stroke: #111;
-  stroke-width: 1.6px;
+  fill: #000;
+  stroke: none;
   vector-effect: non-scaling-stroke;
   transform-box: fill-box;
   transform-origin: center;
