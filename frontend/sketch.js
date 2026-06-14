@@ -1227,11 +1227,12 @@ function computeSVGBounds() {
   const x = (cw - w) / 2;
   const ink = computeSVGInkBox(activePanelSVG());
   // Position the caption just below the actual ink, not the full figure box.
-  // +52 padding on ink.y1 compensates for approxBBox underestimating curves so
-  // the caption clears the drawing with a comfortable margin.
-  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + 52) / SVG_NATIVE) * h : y + h * 0.58;
+  // ink.y1 is now an exact getBBox measurement; a small pad accounts for stroke
+  // width and gives the caption a little breathing room below the drawing.
+  const INK_PAD = 16;
+  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + INK_PAD) / SVG_NATIVE) * h : y + h * 0.58;
   const desiredCaptionTop = inkBottom + gap;
-  const captionTop = Math.max(y + h * 0.52, Math.min(y + h + gap * 1.6, desiredCaptionTop));
+  const captionTop = Math.max(y + h * 0.30, Math.min(y + h + gap * 1.6, desiredCaptionTop));
 
   root.setProperty("--rp-top", captionTop + "px");
   root.setProperty("--fig-dx", "0px");
@@ -1347,9 +1348,47 @@ function activePanelSVG() {
   return (rec && rec.svg) || state.iterHistory[state.viewingIter] || state.currentSVG || "";
 }
 
+// Hidden off-screen SVG used to measure true geometry via getBBox(). Reused
+// across calls so we don't thrash the DOM.
+let _inkMeasureSVG = null;
+function _getInkMeasureSVG() {
+  if (_inkMeasureSVG) return _inkMeasureSVG;
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${SVG_NATIVE} ${SVG_NATIVE}`);
+  svg.setAttribute("width", String(SVG_NATIVE));
+  svg.setAttribute("height", String(SVG_NATIVE));
+  svg.style.cssText = "position:absolute;left:-9999px;top:-9999px;width:" +
+    SVG_NATIVE + "px;height:" + SVG_NATIVE + "px;pointer-events:none;opacity:0;";
+  document.body.appendChild(svg);
+  _inkMeasureSVG = svg;
+  return svg;
+}
+
+// True ink bounds of a drawing, measured by the browser's geometry engine.
+// getBBox() honours every path command (relative moveto, arc flags, beziers),
+// so it is exact where the old number-scraping heuristic was not. Falls back to
+// the heuristic if measurement is unavailable.
 function computeSVGInkBox(svgStr) {
   if (!svgStr) return null;
   const el = parseSVG(svgStr); if (!el) return null;
+  const inner = el.querySelector("g") || el;
+  const host = _getInkMeasureSVG();
+  let box = null;
+  try {
+    host.replaceChildren(document.importNode(inner, true));
+    const g = host.firstElementChild;
+    if (g && typeof g.getBBox === "function") {
+      const bb = g.getBBox();
+      if (bb && bb.width >= 0 && bb.height >= 0 && Number.isFinite(bb.x) && Number.isFinite(bb.y)) {
+        box = { x0: bb.x, y0: bb.y, x1: bb.x + bb.width, y1: bb.y + bb.height,
+                width: bb.width, height: bb.height };
+      }
+    }
+    host.replaceChildren();
+  } catch (_) { /* fall through to heuristic */ }
+  if (box) return box;
+
+  // Fallback: heuristic number-scraping (legacy).
   const boxes = Array.from(el.querySelectorAll("path"))
     .map(path => approxBBox(path.getAttribute("d") || ""))
     .filter(Boolean);
