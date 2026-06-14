@@ -2449,19 +2449,25 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .rp-iter-choice.ready:not(:disabled) { color: #000; }
 .rp-iter-choice.ready:not(:disabled) { cursor: pointer; }
 .rp-iter-choice.ready:not(:disabled):hover { color: #000; }
-.rp-iter-choice.pending { color: #000; }
 .rp-iter-choice.pulse:not(:disabled) { animation: none; }
 .rp-iter-choice.pulse:not(:disabled)::after { content: none; }
-#run-panel:not(.run-complete) .rp-iter-choice {
-  color: #000;
+/* not-yet-reached iterations: muted and inert */
+.rp-iter-choice.pending {
+  color: #c2c2c2;
+  cursor: default;
 }
+/* during the run: reached iterations are black and clickable, current stands out */
 #run-panel:not(.run-complete) .rp-iter-choice.current {
   color: #000;
   font-weight: 400;
 }
-#run-panel:not(.run-complete) .rp-iter-choice.viewed,
-#run-panel:not(.run-complete) .rp-iter-choice.ready:not(:disabled) {
+#run-panel:not(.run-complete) .rp-iter-choice.viewed:not(:disabled) {
   color: #000;
+  cursor: pointer;
+}
+#run-panel:not(.run-complete) .rp-iter-choice.viewed:not(:disabled):hover {
+  color: #000;
+  transform: translateY(-1px);
 }
 #run-panel.run-complete .rp-iter-choice {
   color: #000;
