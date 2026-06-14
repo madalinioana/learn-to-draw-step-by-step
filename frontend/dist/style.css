@@ -1531,6 +1531,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   gap: 13px;
 }
 .tl-param.hidden { display: none; }
+#tl-param-source { flex-basis: 100%; margin-top: 6px; }
 .tl-param dt {
   font-family: var(--paper-serif);
   font-size: 15px;
