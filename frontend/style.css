@@ -2667,10 +2667,16 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   }
   /* While the drawing loads only the status line ("The artist is drawing…")
      should show — the bold "Critic note." label is premature and, on a narrow
-     screen, it pushes the status text off-centre. Hide it until a real critique
-     arrives, and let the lone status text centre cleanly. */
+     screen, it pushes the status text off-centre. Collapse it smoothly using the
+     max-width + opacity transitions already on .rp-note-label, so it fades in
+     when the critique arrives rather than popping from nowhere (display:none would
+     skip the transition entirely). */
   #run-panel:not(.feedback-shown):not(.feedback-typesetting) .rp-note-label {
-    display: none;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-right: 0;
+    pointer-events: none;
   }
   #run-panel:not(.feedback-shown):not(.feedback-typesetting) .rp-note {
     width: auto;
