@@ -1610,8 +1610,9 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 
 /* numeric stepper — minimal text affordances */
 .tl-step-btn {
-  font-family: var(--paper-serif);
-  font-size: 15px;
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 300;
   line-height: 1;
   color: #000;
   background: none;
