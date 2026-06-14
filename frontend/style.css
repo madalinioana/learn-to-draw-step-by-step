@@ -2367,6 +2367,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 }
 .rp-continue:disabled {
   cursor: default;
+  opacity: 0.38;
   pointer-events: none;
 }
 @keyframes rpContinueReady {

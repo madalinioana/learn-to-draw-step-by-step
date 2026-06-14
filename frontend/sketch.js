@@ -734,8 +734,12 @@ function _panelRenderChips() {
   RP.panel.classList.toggle("iterations-all-viewed", allViewed);
   const canAdvance = !allViewed && !_panelViewBusy && _panelFeedbackReady(_panelSel) && _panelSel < total - 1;
   if (RP.continueBtn) {
-    const showContinue = canAdvance;
-    RP.continueBtn.disabled = !showContinue;
+    // During an iteration transition (_panelViewBusy), keep the button's current
+    // visibility so it doesn't collapse and re-expand (which looks like a teleport).
+    // Only the enabled/disabled state changes; visibility settles in the finally block.
+    const currentlyVisible = RP.continueBtn.classList.contains("visible");
+    const showContinue = _panelViewBusy ? currentlyVisible : canAdvance;
+    RP.continueBtn.disabled = !canAdvance;
     RP.continueBtn.classList.toggle("visible", showContinue);
     RP.continueBtn.setAttribute("aria-hidden", showContinue ? "false" : "true");
     RP.continueBtn.setAttribute("aria-label", "continue to next iteration");
