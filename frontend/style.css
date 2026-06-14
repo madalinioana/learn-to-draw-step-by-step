@@ -1,8 +1,37 @@
+@font-face {
+  font-family: 'Latin Modern';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Latin Modern';
+  font-style: italic;
+  font-weight: normal;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Latin Modern';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Latin Modern';
+  font-style: italic;
+  font-weight: bold;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-bold-italic.woff2') format('woff2');
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --paper-serif: 'Computer Modern Serif', 'Latin Modern Roman', 'STIX Two Text', serif;
-  --paper-mono: 'Computer Modern Typewriter', 'Latin Modern Mono', 'JetBrains Mono', monospace;
+  --paper-serif: 'Latin Modern', 'Computer Modern Serif', 'STIX Two Text', serif;
+  --paper-mono: 'Latin Modern Mono', 'Computer Modern Typewriter', 'JetBrains Mono', monospace;
   --accent: #000000;          /* monochrome accent — links, run, live state */
   --accent-soft: rgba(17, 17, 17, 0.45);
   --paper: #ffffff;          /* the page is the whole viewport, arXiv-style */
