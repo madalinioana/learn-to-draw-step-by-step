@@ -43,7 +43,7 @@ prewarmApi(CONFIGURED_API_BASE || SAME_ORIGIN_API_BASE);
 const SVG_NATIVE = 512;
 const PENCIL     = "#666666";  // neutral pencil tone for all annotation marks
 const ART_STROKE = "#000000";
-const ART_STROKE_SCREEN_WIDTH = 2.6;
+const ART_STROKE_SCREEN_WIDTH = 2.0;
 
 // ── DOM refs ──────────────────────────────────────────────────────────────
 const canvas          = document.getElementById("sketch");
@@ -1173,7 +1173,7 @@ function doodleDrawDuration(len) {
 
 function artStrokeWidth(bounds) {
   const scale = bounds && bounds.scale ? bounds.scale : 1;
-  return String(Math.max(1.9, ART_STROKE_SCREEN_WIDTH / scale));
+  return String(Math.max(1.5, ART_STROKE_SCREEN_WIDTH / scale));
 }
 
 function hexToRGB(hex) {
