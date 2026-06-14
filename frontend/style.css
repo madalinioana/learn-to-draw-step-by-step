@@ -779,10 +779,9 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 }
 .tl-sys-base-link {
   opacity: 0;
-  stroke-opacity: 0.16;
 }
 .tl-diagram.is-visible .tl-sys-base-link {
-  opacity: 1;
+  opacity: 0.16;
 }
 .tl-sys-link--input {
   stroke: #111;
