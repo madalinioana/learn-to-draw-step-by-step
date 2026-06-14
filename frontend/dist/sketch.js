@@ -2967,7 +2967,15 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
         }
       });
     }, { threshold: 0.24, rootMargin: "0px 0px -16% 0px" });
-    blocks.forEach(el => revealObs.observe(el));
+    blocks.forEach(el => {
+      // Reveal immediately if already in the visible zone at load time.
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.84) {
+        el.classList.add("is-revealed");
+      } else {
+        revealObs.observe(el);
+      }
+    });
   }
   initPaperMotion();
 
