@@ -1474,8 +1474,8 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .tl-mode-btn:hover { color: #555; }
 .tl-mode-btn.active { color: #000; }
 .tl-mode-btn.active:hover { color: #000; }
-/* a hairline tick under the active tab — drawn, not boxed */
-.tl-mode-btn.active::after {
+/* a hairline tick under the active tab — slides in, drawn not boxed */
+.tl-mode-btn::after {
   content: "";
   position: absolute;
   left: 0;
@@ -1483,10 +1483,14 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   bottom: -5px;
   height: 1px;
   background: #111;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.tl-mode-btn.active::after { transform: scaleX(1); }
 .tl-mode-btn.hidden { display: none; }
 
-/* live / recorded panels */
+/* live / recorded panels — gentle fade each time they appear */
 #tl-live-panel {
   display: flex;
   flex-direction: column;
@@ -1495,6 +1499,14 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 #tl-live-panel.hidden { display: none; }
 #tl-recorded-panel { display: flex; flex-direction: column; }
 #tl-recorded-panel.hidden { display: none; }
+#tl-live-panel:not(.hidden),
+#tl-recorded-panel:not(.hidden) {
+  animation: tlPanelFade 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes tlPanelFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
 
 /* prompt — typeset as a ruled line of the paper, no box */
 .tl-repro-field {
@@ -1917,7 +1929,10 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   .tl-repro-field::after { transition: none; transform: scaleX(1); }
   .tl-begin-arrow { transition: none; }
   .tl-demo-options { transition: none; }
-  .tl-demo-options:not(.hidden) .tl-demo-opt { animation: none; }
+  #tl-recorded-panel:not(.hidden) .tl-demo-opt { animation: none; }
+  #tl-live-panel:not(.hidden),
+  #tl-recorded-panel:not(.hidden) { animation: none; }
+  .tl-mode-btn::after { transition: none; }
 }
 
 /* status strip */
