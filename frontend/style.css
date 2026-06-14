@@ -2664,6 +2664,20 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
     width: calc(100vw - 24px);
     max-width: calc(100vw - 24px);
   }
+  /* While the drawing loads only the status line ("The artist is drawing…")
+     should show — the bold "Critic note." label is premature and, on a narrow
+     screen, it pushes the status text off-centre. Hide it until a real critique
+     arrives, and let the lone status text centre cleanly. */
+  #run-panel:not(.feedback-shown):not(.feedback-typesetting) .rp-note-label {
+    display: none;
+  }
+  #run-panel:not(.feedback-shown):not(.feedback-typesetting) .rp-note {
+    width: auto;
+    max-width: calc(100vw - 24px);
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
   /* Stack score / status+time / iterations each on its own centred line, at the
      same size as the body text — the single horizontal row is too cramped on a
      phone. */
@@ -2672,11 +2686,11 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
     flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
-    row-gap: 8px;
+    row-gap: 14px;
     font-size: 13px;
     max-height: none;
     width: 100%;
-    margin-top: 14px;
+    margin-top: 20px;
   }
   .rp-meta-left,
   .rp-state,
@@ -2690,13 +2704,26 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   .rp-metric { max-width: none; }
   /* The dot separators only read as separators inline — drop them when stacked. */
   .rp-meta-sep { display: none; }
+  /* Let the iteration track and the "continue" action wrap onto separate rows,
+     so "continue" gets its own centred line below "t = 1 2 3 4". */
   .rp-control-line {
     font-size: 13px;
     max-width: none;
     justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 13px;
   }
+  .rp-continue.visible {
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+  /* On its own centred row the leading dot separator no longer reads as one. */
+  .rp-continue::before { display: none; }
   /* Continue button: legible on small screens */
-  .rp-continue { font-size: 13px; }
+  .rp-continue {
+    font-size: 13px;
+    padding: 0;
+  }
   /* Legacy centred landing input ("what should I draw?") must never show over a
      run on mobile — it can leak through once the run panel takes over. */
   body.run-panel-open #prompt-ui { display: none; }
