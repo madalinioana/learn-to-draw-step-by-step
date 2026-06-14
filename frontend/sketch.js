@@ -3108,7 +3108,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
         exampleToken++;
         resetExample();
         loop(exampleToken);
-      }, 600);
+      }, 1000);
     }
 
     function stopExample() {
@@ -3119,14 +3119,13 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
     }
 
     if ("IntersectionObserver" in window) {
-      const target = exSvg.closest(".tl-example-figure") || exSvg;
       const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) startExample();
           else stopExample();
         });
-      }, { threshold: 0.35, rootMargin: "0px 0px 0px 0px" });
-      observer.observe(target);
+      }, { threshold: 0.5, rootMargin: "0px 0px 0px 0px" });
+      observer.observe(exSvg);
     } else {
       startExample();
     }
