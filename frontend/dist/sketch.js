@@ -750,11 +750,11 @@ function _panelRenderChips() {
     const hasSvg = Boolean((rec && rec.svg) || state.iterHistory[i]);
     const current = i === _panelSel;
     const previouslyViewed = _panelViewed.has(i);
-    // Iterations already stepped through are clickable to revisit. During the
-    // run those are the ones already viewed; once the run completes every
-    // computed iteration becomes navigable.
+    // Iterations already stepped through are clickable to revisit at any time.
+    // Forward jumps are blocked until all iterations have been viewed — only
+    // after viewing the last one (allViewed) does full free navigation unlock.
     const enabled = !current && !_panelViewBusy && hasSvg &&
-                    (runComplete || previouslyViewed);
+                    (allViewed || previouslyViewed);
 
     const item = document.createElement("button");
     item.type = "button";
