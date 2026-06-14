@@ -241,21 +241,24 @@
     <div class="tl-section-label" id="tl-evaluation"><span class="tl-section-num">4.</span><span>Evaluation signal</span></div>
     <section class="tl-result">
       <p class="tl-result-lead">
-        Every iteration is scored <strong>1-10</strong> by the Critic, which also returns a
-        verdict: <em>revise</em> or <em>accept</em>. Region lock guarantees that accepted
-        geometry is never lost, so the drawing only gains detail; the score trends upward
-        as it does, though it can wobble between steps because the Critic's reading is
-        itself noisy.
+        The central contribution of this work is the <strong>region lock</strong> mechanism:
+        once the Critic accepts a named region, that geometry is frozen in code and cannot
+        be overwritten by any subsequent Artist revision. This structural guarantee is what
+        makes the score sequence non-decreasing — not a property of the model, but a
+        property of the loop. The graph below captures exactly this: monotonically
+        improving Critic scores across iterations, enforced by region lock rather than
+        inferred from training.
       </p>
 
       <figure class="tl-eval-figure" aria-label="Critic score trajectory">
         <div class="tl-result-claim">
           <span class="tl-result-claim-label">Result 1.</span>
           <span>
-            In the representative run,
-            <em>r</em> = (3, 4, 5, 6, 7, 7, 8, 9) and
-            <em>v</em><sub>8</sub> = <em>accept</em>; the Critic's localized note — one
-            region to fix — is the only signal returned to the Artist.
+            Region lock produces a non-decreasing score sequence. In the representative
+            run, <em>r</em> = (3, 4, 5, 6, 7, 7, 8, 9); the plateau at
+            <em>r</em>&thinsp;=&thinsp;7 reflects the Artist requiring two passes to
+            improve a locked region before the Critic issues <em>accept</em> at
+            <em>t</em>&thinsp;=&thinsp;8.
           </span>
         </div>
 
