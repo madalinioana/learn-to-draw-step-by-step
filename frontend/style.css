@@ -811,7 +811,9 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   opacity: 0.18;
   transition: opacity 0.42s ease;
 }
+.tl-diagram.is-visible[data-phase="1"] #sys-prompt,
 .tl-diagram.is-visible[data-phase="1"] #sys-a-r,
+.tl-diagram.is-visible[data-phase="1"] .tl-sys-label--input,
 .tl-diagram.is-visible[data-phase="1"] .tl-sys-label--1,
 .tl-diagram.is-visible[data-phase="1"] .tl-sys-node--artist,
 .tl-diagram.is-visible[data-phase="2"] #sys-r-c,
@@ -825,6 +827,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .tl-diagram.is-visible[data-phase="4"] .tl-sys-node--feedback {
   opacity: 1;
 }
+.tl-diagram.is-visible[data-phase="1"] .tl-sys-label--input,
 .tl-diagram.is-visible[data-phase="1"] .tl-sys-label--1,
 .tl-diagram.is-visible[data-phase="2"] .tl-sys-label--2,
 .tl-diagram.is-visible[data-phase="3"] .tl-sys-label--3,
