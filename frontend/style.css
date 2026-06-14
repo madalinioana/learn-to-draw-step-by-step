@@ -1286,7 +1286,8 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   stroke-width: 1px;
 }
 .tl-eval-grid {
-  display: none;
+  stroke: #e8e8e8;
+  stroke-width: 0.8px;
 }
 .tl-eval-ticks {
   stroke: #111;
