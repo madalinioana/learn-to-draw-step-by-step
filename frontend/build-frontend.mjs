@@ -6,7 +6,7 @@ const source = resolve(root, "frontend");
 const output = resolve(source, "dist");
 const apiBase = (process.env.SKETCH_API_BASE || "").trim().replace(/\/+$/, "");
 const deploymentProfile = (process.env.DEPLOYMENT_PROFILE || "local").trim().toLowerCase();
-const staticFiles = ["index.html", "style.css", "sketch.js", "demo.js"];
+const staticFiles = ["index.html", "style.css", "sketch.js", "demo.js", "thesis.pdf"];
 
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
