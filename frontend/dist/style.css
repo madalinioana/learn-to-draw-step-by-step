@@ -1444,45 +1444,46 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .tl-lobby-intro em { font-style: italic; color: #000; }
 
 .tl-repro {
-  margin: 30px 0 18px;
+  margin: 38px 0 22px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
-/* mode toggle — same ruled-line treatment as the prompt field */
+/* mode toggle — quiet tabs, no rule of their own (the prompt line below carries it) */
 .tl-mode-toggle {
-  position: relative;
   display: flex;
   align-items: baseline;
-  gap: 24px;
-  padding-bottom: 11px;
+  gap: 28px;
+  margin-bottom: 6px;
 }
-.tl-mode-toggle::after {
+.tl-mode-btn {
+  position: relative;
+  font-family: var(--paper-serif);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  background: none;
+  border: none;
+  padding: 0;
+  color: #b3b3b3;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.tl-mode-btn:focus { outline: none; }
+.tl-mode-btn:focus-visible { outline: none; color: #000; }
+.tl-mode-btn:hover { color: #555; }
+.tl-mode-btn.active { color: #000; }
+.tl-mode-btn.active:hover { color: #000; }
+/* a hairline tick under the active tab — drawn, not boxed */
+.tl-mode-btn.active::after {
   content: "";
   position: absolute;
   left: 0;
-  bottom: 0;
-  width: 100%;
+  right: 0;
+  bottom: -5px;
   height: 1px;
   background: #111;
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.tl-lobby.is-revealed .tl-mode-toggle::after { transform: scaleX(1); }
-.tl-mode-btn {
-  font-family: var(--paper-serif);
-  font-size: 15px;
-  background: none;
-  border: none;
-  padding: 0 0 1px;
-  color: #aaa;
-  cursor: pointer;
-  transition: color 0.18s ease;
-}
-.tl-mode-btn.active { color: #000; }
-.tl-mode-btn:hover { color: #000; }
 .tl-mode-btn.hidden { display: none; }
 
 /* live / recorded panels */
@@ -1648,50 +1649,72 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   color: #000;
 }
 
-/* recorded subjects — revealed inline with a soft expand + stagger */
+/* recorded subjects — typeset on a ruled line, matching the prompt field */
+.tl-recorded-field {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding-bottom: 11px;
+}
+.tl-recorded-field::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: #111;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#tl-recorded-panel:not(.hidden) .tl-recorded-field::after { transform: scaleX(1); }
 .tl-demo-options {
-  overflow: hidden;
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 8px 18px;
-  max-height: 160px;
-  opacity: 1;
-  transition: max-height 0.42s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
-}
-.tl-demo-options.hidden {
-  display: flex;
-  max-height: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-.tl-demo-options-label {
-  font-family: var(--paper-serif);
-  font-size: 15px;
-  color: #000;
+  gap: 8px 24px;
 }
 .tl-demo-options-list {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 6px 18px;
+  gap: 8px 24px;
 }
 .tl-demo-opt {
+  position: relative;
   font-family: var(--paper-serif);
   font-size: 15px;
-  color: #000;
+  color: #444;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
-  transition: color 0.15s ease;
+  transition: color 0.16s ease;
+}
+.tl-demo-opt::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: #111;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.2s ease;
 }
 .tl-demo-opt:hover { color: #000; }
-.tl-demo-options:not(.hidden) .tl-demo-opt {
+.tl-demo-opt:hover::after { transform: scaleX(1); }
+.tl-demo-opt:focus { outline: none; }
+.tl-demo-opt:focus-visible { color: #000; }
+.tl-demo-opt:focus-visible::after { transform: scaleX(1); }
+#tl-recorded-panel:not(.hidden) .tl-demo-opt {
   animation: tlReproItem 0.4s ease both;
 }
-.tl-demo-options:not(.hidden) .tl-demo-opt:nth-child(2) { animation-delay: 0.05s; }
-.tl-demo-options:not(.hidden) .tl-demo-opt:nth-child(3) { animation-delay: 0.10s; }
-.tl-demo-options:not(.hidden) .tl-demo-opt:nth-child(4) { animation-delay: 0.15s; }
+#tl-recorded-panel:not(.hidden) .tl-demo-opt:nth-child(2) { animation-delay: 0.05s; }
+#tl-recorded-panel:not(.hidden) .tl-demo-opt:nth-child(3) { animation-delay: 0.10s; }
+#tl-recorded-panel:not(.hidden) .tl-demo-opt:nth-child(4) { animation-delay: 0.15s; }
 @keyframes tlReproItem {
   from { opacity: 0; transform: translateY(5px); }
   to   { opacity: 1; transform: none; }
