@@ -1450,6 +1450,51 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   gap: 12px;
 }
 
+/* mode toggle — same ruled-line treatment as the prompt field */
+.tl-mode-toggle {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  padding-bottom: 11px;
+}
+.tl-mode-toggle::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: #111;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tl-lobby.is-revealed .tl-mode-toggle::after { transform: scaleX(1); }
+.tl-mode-btn {
+  font-family: var(--paper-serif);
+  font-size: 15px;
+  background: none;
+  border: none;
+  padding: 0 0 1px;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+.tl-mode-btn.active { color: #000; }
+.tl-mode-btn:hover { color: #000; }
+.tl-mode-btn.hidden { display: none; }
+
+/* live / recorded panels */
+#tl-live-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#tl-live-panel.hidden { display: none; }
+#tl-recorded-panel { display: flex; flex-direction: column; }
+#tl-recorded-panel.hidden { display: none; }
+
 /* prompt — typeset as a ruled line of the paper, no box */
 .tl-repro-field {
   position: relative;
@@ -1531,7 +1576,6 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   gap: 13px;
 }
 .tl-param.hidden { display: none; }
-#tl-param-source { flex-basis: 100%; margin-top: 6px; }
 .tl-param dt {
   font-family: var(--paper-serif);
   font-size: 15px;

@@ -2849,14 +2849,16 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
   const iterMinus   = document.getElementById("tl-iter-minus");
   const iterPlus    = document.getElementById("tl-iter-plus");
   const beginBtn    = document.getElementById("tl-begin");
-  const demoBtn     = document.getElementById("tl-demo");
   const promptField = document.getElementById("tl-prompt");
   const demoOptions = document.getElementById("tl-demo-options");
   const demoOptList = document.getElementById("tl-demo-options-list");
   const statusDot   = document.getElementById("tl-status-dot");
   const statusText  = document.getElementById("tl-status-text");
   const backendParam = document.getElementById("tl-param-backend");
-  const sourceParam = document.getElementById("tl-param-source");
+  const liveModeBtn     = document.getElementById("tl-mode-live");
+  const recordedModeBtn = document.getElementById("tl-mode-recorded");
+  const livePanel       = document.getElementById("tl-live-panel");
+  const recordedPanel   = document.getElementById("tl-recorded-panel");
   const modelStatus = document.getElementById("tl-model-status");
   const setupText = document.getElementById("tl-repro-setup");
   const setupCode = document.getElementById("tl-repro-code");
@@ -3178,16 +3180,9 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
 
   function renderFeatureFlags() {
     if (backendParam) backendParam.classList.toggle("hidden", !featureFlags.backend_picker);
-    if (sourceParam) {
-      sourceParam.classList.toggle("hidden", !featureFlags.recorded);
-      const sourceLabel = sourceParam.querySelector("dt");
-      const sourceMode = sourceParam.querySelector(".tl-mode-tag");
-      if (sourceLabel) sourceLabel.classList.toggle("hidden", DEPLOYMENT_PROFILE === "hosted");
-      if (sourceMode) sourceMode.classList.toggle("hidden", DEPLOYMENT_PROFILE === "hosted");
-    }
+    if (recordedModeBtn) recordedModeBtn.classList.toggle("hidden", !featureFlags.recorded);
     if (!featureFlags.recorded) {
-      if (demoBtn) demoBtn.classList.remove("active");
-      if (demoOptions) demoOptions.classList.add("hidden");
+      setMode("live");
       if (modeMetaEl) modeMetaEl.textContent = "live";
     }
     renderProfileCopy();
@@ -3351,21 +3346,19 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
     demoOptList.appendChild(opt);
   });
 
-  // Demo button toggles the inline subject options (no intermediate screen).
-  demoBtn.addEventListener("click", () => {
+  function setMode(mode) {
+    const toLive = mode === "live";
+    if (liveModeBtn) liveModeBtn.classList.toggle("active", toLive);
+    if (recordedModeBtn) recordedModeBtn.classList.toggle("active", !toLive);
+    if (livePanel) livePanel.classList.toggle("hidden", !toLive);
+    if (recordedPanel) recordedPanel.classList.toggle("hidden", toLive);
+    if (modeMetaEl) modeMetaEl.textContent = toLive ? "live" : "recorded";
+  }
+
+  if (liveModeBtn) liveModeBtn.addEventListener("click", () => setMode("live"));
+  if (recordedModeBtn) recordedModeBtn.addEventListener("click", () => {
     if (!featureFlags.recorded) return;
-    const showing = !demoOptions.classList.contains("hidden");
-    if (showing) {
-      demoBtn.classList.remove("active");
-      demoOptions.classList.add("hidden");
-      if (modeMetaEl) modeMetaEl.textContent = "live";
-    } else {
-      demoBtn.classList.add("active");
-      demoOptions.classList.remove("hidden");
-      if (modeMetaEl) modeMetaEl.textContent = "recorded";
-      demoOptions.classList.add("revealing");
-      requestAnimationFrame(() => requestAnimationFrame(() => demoOptions.classList.remove("revealing")));
-    }
+    setMode("recorded");
   });
 
   // Fade the thesis landing away, then start the run. We skip the old scattered
