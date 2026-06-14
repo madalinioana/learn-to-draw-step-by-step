@@ -1270,7 +1270,11 @@ function normalizeSVG(svgStr, bounds) {
     .replace(/\bstroke="(?!none)[^"]*"/g, `stroke="${ART_STROKE}"`)
     .replace(/\bstroke-width="[^"]*"/g, `stroke-width="${strokeWidth}"`)
     .replace(/\bstroke-opacity="[^"]*"/g, 'stroke-opacity="1"')
-    .replace(/\bopacity="[^"]*"/g, 'opacity="1"');
+    .replace(/\bopacity="[^"]*"/g, 'opacity="1"')
+    // Paths without an explicit stroke-width keep the browser default (1 px) and
+    // appear thin against paths that were explicitly set. Add the attribute to any
+    // <path> element that the regex above did not already touch.
+    .replace(/<path\b(?![^>]*\bstroke-width\b)/g, `<path stroke-width="${strokeWidth}"`);
 }
 
 function renderSVGToCanvas(svgStr) {

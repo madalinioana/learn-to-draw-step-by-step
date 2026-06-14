@@ -2502,7 +2502,8 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .rp-iter-choice.pulse:not(:disabled) { animation: none; }
 .rp-iter-choice.pulse:not(:disabled)::after { content: none; }
 /* not-yet-reached iterations: muted and inert */
-.rp-iter-choice.pending {
+.rp-iter-choice.pending,
+#run-panel .rp-iter-choice.pending {
   color: #c2c2c2;
   cursor: default;
 }
