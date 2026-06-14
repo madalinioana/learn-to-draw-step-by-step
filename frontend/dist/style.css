@@ -1046,6 +1046,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .tl-algorithm.is-visible .tl-algorithm-steps li:nth-child(8) { animation-delay: 5.13s; }
 .tl-algorithm.is-visible .tl-algorithm-steps li:nth-child(9) { animation-delay: 5.87s; }
 .tl-algorithm.is-visible .tl-algorithm-steps li:nth-child(10) { animation-delay: 6.6s; }
+.tl-algorithm.is-visible .tl-algorithm-steps li:nth-child(11) { animation-delay: 7.33s; }
 .tl-algorithm-line {
   font-family: var(--paper-mono);
   font-size: 11px;
