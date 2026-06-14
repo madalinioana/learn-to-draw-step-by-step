@@ -3097,15 +3097,22 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
       }
     }
 
+    let _exStartTimer = null;
+
     function startExample() {
-      if (exampleRunning) return;
-      exampleRunning = true;
-      exampleToken++;
-      resetExample();
-      loop(exampleToken);
+      if (_exStartTimer) return;
+      _exStartTimer = setTimeout(() => {
+        _exStartTimer = null;
+        if (exampleRunning) return;
+        exampleRunning = true;
+        exampleToken++;
+        resetExample();
+        loop(exampleToken);
+      }, 600);
     }
 
     function stopExample() {
+      if (_exStartTimer) { clearTimeout(_exStartTimer); _exStartTimer = null; }
       exampleRunning = false;
       exampleToken++;
       resetExample();
