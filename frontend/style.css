@@ -1164,7 +1164,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .tl-example-stroke {
   fill: none;
   stroke: #000;
-  stroke-width: 1.42px;
+  stroke-width: 2px;
   vector-effect: non-scaling-stroke;
   stroke-linecap: round;
   stroke-linejoin: round;
