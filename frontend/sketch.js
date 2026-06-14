@@ -3260,7 +3260,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
 
   function renderLocalModelStatus() {
     if (!modelStatus) return;
-    if (!featureFlags.show_model_names) {
+    if (!featureFlags.show_model_names || SELECTED_BACKEND !== "local") {
       modelStatus.classList.add("hidden");
       modelStatus.innerHTML = "";
       return;
@@ -3444,6 +3444,14 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
     }
     if (bridgeStatus) bridgeStatus.textContent = label;
     if (bridgeDetail) bridgeDetail.textContent = detail;
+    if (beginBtn) {
+      if (kind === "checking") {
+        beginBtn.classList.add("tl-begin--loading");
+        beginBtn.disabled = true;
+      } else {
+        beginBtn.classList.remove("tl-begin--loading");
+      }
+    }
   }
 
   function fetchConfigFrom(base) {
