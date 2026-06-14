@@ -1331,6 +1331,11 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   text-anchor: end;
   fill: #555;
 }
+.tl-eval-verdict-sep {
+  stroke: #d8d8d8;
+  stroke-width: 0.8px;
+  vector-effect: non-scaling-stroke;
+}
 .tl-eval-verdicts .tl-eval-verdict--accept {
   fill: #111;
   font-weight: 600;
