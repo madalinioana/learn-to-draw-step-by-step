@@ -2615,20 +2615,42 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
     width: calc(100vw - 24px);
     max-width: calc(100vw - 24px);
   }
-  /* Break the status bar into two lines on narrow screens */
+  /* Stack score / status+time / iterations each on its own centred line, at the
+     same size as the body text — the single horizontal row is too cramped on a
+     phone. */
   .rp-meta {
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
     justify-content: center;
-    row-gap: 4px;
-    font-size: 11.5px;
-    margin-top: 10px;
+    row-gap: 8px;
+    font-size: 13px;
+    max-height: none;
+    width: 100%;
+    margin-top: 14px;
   }
-  .rp-meta-left { order: 1; }
-  .rp-state     { order: 2; }
-  .rp-meta-right { order: 3; flex-basis: 100%; justify-content: center; }
-  .rp-control-line { font-size: 11.5px; }
+  .rp-meta-left,
+  .rp-state,
+  .rp-meta-right {
+    order: initial;
+    flex: 0 0 auto;
+    flex-basis: auto;
+    width: 100%;
+    justify-content: center;
+  }
+  .rp-metric { max-width: none; }
+  /* The dot separators only read as separators inline — drop them when stacked. */
+  .rp-meta-sep { display: none; }
+  .rp-control-line {
+    font-size: 13px;
+    max-width: none;
+    justify-content: center;
+  }
   /* Continue button: legible on small screens */
-  .rp-continue { font-size: 11.5px; }
+  .rp-continue { font-size: 13px; }
+  /* Legacy centred landing input ("what should I draw?") must never show over a
+     run on mobile — it can leak through once the run panel takes over. */
+  body.run-panel-open #prompt-ui { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
