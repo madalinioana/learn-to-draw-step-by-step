@@ -771,6 +771,7 @@ function _panelRenderChips() {
       item.setAttribute("aria-current", "step");
     } else if (runComplete && hasSvg) {
       item.classList.add("complete");
+      if (!previouslyViewed) item.classList.add("pending");
     } else if (previouslyViewed) {
       item.classList.add("viewed");
     } else {

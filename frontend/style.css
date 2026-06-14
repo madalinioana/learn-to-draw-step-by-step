@@ -2531,6 +2531,10 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 }
 #run-panel.run-complete .rp-iter-choice.complete:not(:disabled) { cursor: pointer; }
 #run-panel.run-complete .rp-iter-choice.complete:not(:disabled):hover { transform: translateY(-1px); }
+/* complete but not yet visited — still show as grey until the user navigates to it */
+#run-panel.run-complete .rp-iter-choice.complete.pending:not(.current) {
+  color: #c2c2c2;
+}
 #run-panel.run-complete .rp-iter-choice.current {
   color: #000;
   font-style: normal;
