@@ -2041,7 +2041,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 }
 
 .rp-caption {
-  margin: 0;
+  margin: 18px 0 0;
   max-height: 48px;
   overflow: hidden;
   font-size: 14.5px;
