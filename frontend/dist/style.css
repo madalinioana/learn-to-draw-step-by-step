@@ -1286,9 +1286,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   stroke-width: 1px;
 }
 .tl-eval-grid {
-  stroke: #d8d8d8;
-  stroke-width: 0.8px;
-  stroke-dasharray: 2 5;
+  display: none;
 }
 .tl-eval-ticks {
   stroke: #111;
@@ -1370,7 +1368,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   font-style: italic;
   line-height: 1.5;
   color: #000;
-  margin: 8px auto 0;
+  margin: 0 auto 0;
   max-width: 640px;
   text-align: center;
 }
