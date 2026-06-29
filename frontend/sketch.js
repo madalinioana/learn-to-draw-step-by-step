@@ -2952,12 +2952,21 @@ let SELECTED_BACKEND = DEPLOYMENT_PROFILE === "hosted" ? "gemini" : "local";
     // initial load, so it uses a lighter threshold than later sections.
     const diagrams = Array.from(document.querySelectorAll(".tl-diagram"));
     if (diagrams.length && ("IntersectionObserver" in window)) {
+      // threshold 0 so a tall diagram appears the moment any part of it enters the
+      // viewport (16% of a large diagram may never fit on screen at once).
       const diagramObserver = new IntersectionObserver(entries => {
         entries.forEach(entry => {
           entry.target.classList.toggle("is-visible", entry.isIntersecting);
         });
-      }, { threshold: 0.16, rootMargin: "0px 0px -8% 0px" });
-      diagrams.forEach(el => diagramObserver.observe(el));
+      }, { threshold: 0, rootMargin: "0px" });
+      diagrams.forEach(el => {
+        diagramObserver.observe(el);
+        // Reveal immediately if it's already on screen at load — the observer's
+        // first callback can otherwise leave an in-view diagram hidden until the
+        // first scroll nudges it.
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) el.classList.add("is-visible");
+      });
     } else {
       diagrams.forEach(el => el.classList.add("is-visible"));
     }
