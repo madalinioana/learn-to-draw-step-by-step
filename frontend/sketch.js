@@ -1238,11 +1238,18 @@ function computeSVGBounds() {
   const x = (cw - w) / 2;
   const ink = computeSVGInkBox(activePanelSVG());
   // Position the caption just below the actual ink, not the full figure box.
-  // ink.y1 is now an exact getBBox measurement; a small pad accounts for stroke
+  // ink.y1 is an exact getBBox measurement; a small pad accounts for stroke
   // width and gives the caption a little breathing room below the drawing.
+  // CRITICAL: the caption must never land on top of the drawing. When the ink
+  // can't be measured, fall back to the bottom of the FULL figure box (y + h),
+  // never a fraction of it — the SVG viewBox (0..512) is clipped to that box, so
+  // nothing can ever be drawn below y + h. A fractional fallback (e.g. 0.58h)
+  // would tuck the caption into the middle of a tall drawing.
   const INK_PAD = 16;
-  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + INK_PAD) / SVG_NATIVE) * h : y + h * 0.58;
+  const inkBottom = ink ? y + (Math.min(SVG_NATIVE, ink.y1 + INK_PAD) / SVG_NATIVE) * h : y + h;
   const desiredCaptionTop = inkBottom + gap;
+  // Lower bound keeps a little structure for tiny drawings; upper bound never
+  // exceeds the full figure box plus a gap, so the caption is always clear of it.
   const captionTop = Math.max(y + h * 0.30, Math.min(y + h + gap * 1.6, desiredCaptionTop));
 
   root.setProperty("--rp-top", captionTop + "px");
@@ -1394,7 +1401,11 @@ function computeSVGInkBox(svgStr) {
     const g = host.firstElementChild;
     if (g && typeof g.getBBox === "function") {
       const bb = g.getBBox();
-      if (bb && bb.width >= 0 && bb.height >= 0 && Number.isFinite(bb.x) && Number.isFinite(bb.y)) {
+      // Require a real, non-degenerate box. A 0x0 result means the off-screen
+      // measuring SVG hasn't been laid out yet; accepting it would report an ink
+      // bottom of 0 and pull the caption up over the drawing. Reject it and let
+      // the heuristic (or the safe full-box fallback) take over.
+      if (bb && (bb.width > 0.5 || bb.height > 0.5) && Number.isFinite(bb.x) && Number.isFinite(bb.y)) {
         box = { x0: bb.x, y0: bb.y, x1: bb.x + bb.width, y1: bb.y + bb.height,
                 width: bb.width, height: bb.height };
       }
