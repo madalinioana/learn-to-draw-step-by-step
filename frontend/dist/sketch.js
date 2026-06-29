@@ -456,7 +456,9 @@ function _panelDisplayFeedback(rec) {
 function _panelRecordedDelay(idx, stage) {
   const seed = Math.sin((idx + 1) * (stage === "artist" ? 17.31 : 29.73)) * 10000;
   const jitter = seed - Math.floor(seed);
-  if (stage === "artist") return 7000 + Math.round(jitter * 1000);
+  // Keep the recorded artist wait at/under the 3s floor so a replayed run starts
+  // drawing about as fast as a live cloud run (~3s), instead of a long fake pause.
+  if (stage === "artist") return 2000 + Math.round(jitter * 600);
   return 3000 + Math.round(jitter * 1000);
 }
 

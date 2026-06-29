@@ -218,7 +218,7 @@ const DEMO_PROMPTS = [
 
 const DEMO_DELAYS = {
   afterStart:        800,   // iteration_start → start of thinking pause
-  generationThink:  7000,   // artist generation pause — about 7–8 seconds total
+  generationThink:  2200,   // artist generation pause — ~3s total before drawing, matching a live cloud run
   afterGeneration:   400,   // generation_done → render_done
   afterRender:       300,   // render_done → critique_start
   critiqueThink:    3500,   // critic feedback pause — about 3–4 seconds
