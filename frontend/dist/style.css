@@ -1,8 +1,37 @@
+@font-face {
+  font-family: 'Latin Modern';
+  font-style: normal;
+  font-weight: normal;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Latin Modern';
+  font-style: italic;
+  font-weight: normal;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Latin Modern';
+  font-style: normal;
+  font-weight: bold;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Latin Modern';
+  font-style: italic;
+  font-weight: bold;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/npm/latex.css@1.10.0/fonts/LM-bold-italic.woff2') format('woff2');
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --paper-serif: 'Computer Modern Serif', 'Latin Modern Roman', 'STIX Two Text', serif;
-  --paper-mono: 'Computer Modern Typewriter', 'Latin Modern Mono', 'JetBrains Mono', monospace;
+  --paper-serif: 'Latin Modern', 'Computer Modern Serif', 'STIX Two Text', serif;
+  --paper-mono: 'Latin Modern Mono', 'Computer Modern Typewriter', 'JetBrains Mono', monospace;
   --accent: #000000;          /* monochrome accent — links, run, live state */
   --accent-soft: rgba(17, 17, 17, 0.45);
   --paper: #ffffff;          /* the page is the whole viewport, arXiv-style */
@@ -1135,7 +1164,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .tl-example-stroke {
   fill: none;
   stroke: #000;
-  stroke-width: 1.42px;
+  stroke-width: 2.5px;
   vector-effect: non-scaling-stroke;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1577,6 +1606,26 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .tl-begin:hover .tl-begin-arrow { margin-left: 5px; }
 .tl-begin:disabled { color: #bbb; cursor: not-allowed; }
 .tl-begin:disabled .tl-begin-arrow { margin-left: 0; }
+
+/* backend cold-start loading state */
+.tl-begin-loading-text { display: none; }
+.tl-begin-label { opacity: 1; transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.tl-begin--loading { cursor: default; }
+.tl-begin--loading .tl-begin-label { opacity: 0; pointer-events: none; }
+.tl-begin--loading .tl-begin-loading-text {
+  display: inline-block;
+  color: transparent;
+  background-image: linear-gradient(
+    90deg,
+    #b8b8b8 0%, #b8b8b8 20%, #777 36%, #111 46%,
+    #000 50%, #111 54%, #777 64%, #b8b8b8 80%, #b8b8b8 100%
+  );
+  background-size: 255% 100%;
+  background-position: 140% 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: rpDrawBeam 2.45s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
 
 /* parameters — inline definition list, hairline gaps, no chrome */
 .tl-params {
@@ -2021,7 +2070,7 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 }
 
 .rp-caption {
-  margin: 0;
+  margin: 18px 0 0;
   max-height: 48px;
   overflow: hidden;
   font-size: 14.5px;
@@ -2453,7 +2502,8 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 .rp-iter-choice.pulse:not(:disabled) { animation: none; }
 .rp-iter-choice.pulse:not(:disabled)::after { content: none; }
 /* not-yet-reached iterations: muted and inert */
-.rp-iter-choice.pending {
+.rp-iter-choice.pending,
+#run-panel .rp-iter-choice.pending {
   color: #c2c2c2;
   cursor: default;
 }
@@ -2481,6 +2531,10 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
 }
 #run-panel.run-complete .rp-iter-choice.complete:not(:disabled) { cursor: pointer; }
 #run-panel.run-complete .rp-iter-choice.complete:not(:disabled):hover { transform: translateY(-1px); }
+/* complete but not yet visited — still show as grey until the user navigates to it */
+#run-panel.run-complete .rp-iter-choice.complete.pending:not(.current) {
+  color: #c2c2c2;
+}
 #run-panel.run-complete .rp-iter-choice.current {
   color: #000;
   font-style: normal;
@@ -2615,6 +2669,26 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
     width: calc(100vw - 24px);
     max-width: calc(100vw - 24px);
   }
+  /* While the drawing loads only the status line ("The artist is drawing…")
+     should show — the bold "Critic note." label is premature and, on a narrow
+     screen, it pushes the status text off-centre. Collapse it smoothly using the
+     max-width + opacity transitions already on .rp-note-label, so it fades in
+     when the critique arrives rather than popping from nowhere (display:none would
+     skip the transition entirely). */
+  #run-panel:not(.feedback-shown):not(.feedback-typesetting) .rp-note-label {
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-right: 0;
+    pointer-events: none;
+  }
+  #run-panel:not(.feedback-shown):not(.feedback-typesetting) .rp-note {
+    width: auto;
+    max-width: calc(100vw - 24px);
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
   /* Stack score / status+time / iterations each on its own centred line, at the
      same size as the body text — the single horizontal row is too cramped on a
      phone. */
@@ -2623,11 +2697,11 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
     flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
-    row-gap: 8px;
+    row-gap: 14px;
     font-size: 13px;
     max-height: none;
     width: 100%;
-    margin-top: 14px;
+    margin-top: 20px;
   }
   .rp-meta-left,
   .rp-state,
@@ -2641,13 +2715,26 @@ body:has(#thesis-landing:not(.gone)) #demo-toggle { display: none; }
   .rp-metric { max-width: none; }
   /* The dot separators only read as separators inline — drop them when stacked. */
   .rp-meta-sep { display: none; }
+  /* Let the iteration track and the "continue" action wrap onto separate rows,
+     so "continue" gets its own centred line below "t = 1 2 3 4". */
   .rp-control-line {
     font-size: 13px;
     max-width: none;
     justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 13px;
   }
+  .rp-continue.visible {
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+  /* On its own centred row the leading dot separator no longer reads as one. */
+  .rp-continue::before { display: none; }
   /* Continue button: legible on small screens */
-  .rp-continue { font-size: 13px; }
+  .rp-continue {
+    font-size: 13px;
+    padding: 0;
+  }
   /* Legacy centred landing input ("what should I draw?") must never show over a
      run on mobile — it can leak through once the run panel takes over. */
   body.run-panel-open #prompt-ui { display: none; }

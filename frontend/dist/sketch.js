@@ -43,7 +43,7 @@ prewarmApi(CONFIGURED_API_BASE || SAME_ORIGIN_API_BASE);
 const SVG_NATIVE = 512;
 const PENCIL     = "#666666";  // neutral pencil tone for all annotation marks
 const ART_STROKE = "#000000";
-const ART_STROKE_SCREEN_WIDTH = 1.42;
+const ART_STROKE_SCREEN_WIDTH = 2.5;
 
 // ── DOM refs ──────────────────────────────────────────────────────────────
 const canvas          = document.getElementById("sketch");
@@ -771,6 +771,7 @@ function _panelRenderChips() {
       item.setAttribute("aria-current", "step");
     } else if (runComplete && hasSvg) {
       item.classList.add("complete");
+      if (!previouslyViewed) item.classList.add("pending");
     } else if (previouslyViewed) {
       item.classList.add("viewed");
     } else {
@@ -1168,12 +1169,12 @@ function doodleStrokeEase(t) {
 }
 
 function doodleDrawDuration(len) {
-  return Math.max(660, Math.min(2200, len * 7.4));
+  return Math.max(360, Math.min(1200, len * 4.0));
 }
 
 function artStrokeWidth(bounds) {
   const scale = bounds && bounds.scale ? bounds.scale : 1;
-  return String(Math.max(1.2, ART_STROKE_SCREEN_WIDTH / scale));
+  return String(Math.max(2.0, ART_STROKE_SCREEN_WIDTH / scale));
 }
 
 function hexToRGB(hex) {
@@ -1270,7 +1271,11 @@ function normalizeSVG(svgStr, bounds) {
     .replace(/\bstroke="(?!none)[^"]*"/g, `stroke="${ART_STROKE}"`)
     .replace(/\bstroke-width="[^"]*"/g, `stroke-width="${strokeWidth}"`)
     .replace(/\bstroke-opacity="[^"]*"/g, 'stroke-opacity="1"')
-    .replace(/\bopacity="[^"]*"/g, 'opacity="1"');
+    .replace(/\bopacity="[^"]*"/g, 'opacity="1"')
+    // Paths without an explicit stroke-width keep the browser default (1 px) and
+    // appear thin against paths that were explicitly set. Add the attribute to any
+    // <path> element that the regex above did not already touch.
+    .replace(/<path\b(?![^>]*\bstroke-width\b)/g, `<path stroke-width="${strokeWidth}"`);
 }
 
 function renderSVGToCanvas(svgStr) {
@@ -3129,18 +3134,18 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
       while (!_doodleAnimStop && exampleRunning && token === exampleToken) {
         // Draw stroke by stroke with restrained figure-like pacing.
         for (let i = 0; i < paths.length; i++) {
-          const drawMs = Math.max(660, Math.min(2200, lens[i] * 7.4));
+          const drawMs = Math.max(360, Math.min(1200, lens[i] * 4.0));
           await animPath(paths[i], lens[i], true, drawMs, token);
           if (!exampleRunning || token !== exampleToken) return;
-          if (i < paths.length - 1) await wait(150);
+          if (i < paths.length - 1) await wait(80);
         }
         await wait(1500);
         if (_doodleAnimStop || !exampleRunning || token !== exampleToken) return;
         // Undraw in reverse, still slow enough to read as a plotted trace.
         for (let i = paths.length - 1; i >= 0; i--) {
-          await animPath(paths[i], lens[i], false, Math.max(460, Math.min(1200, lens[i] * 4.3)), token);
+          await animPath(paths[i], lens[i], false, Math.max(260, Math.min(660, lens[i] * 2.4)), token);
           if (!exampleRunning || token !== exampleToken) return;
-          if (i > 0) await wait(74);
+          if (i > 0) await wait(40);
         }
         await wait(320);
       }
@@ -3260,7 +3265,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
 
   function renderLocalModelStatus() {
     if (!modelStatus) return;
-    if (!featureFlags.show_model_names) {
+    if (!featureFlags.show_model_names || SELECTED_BACKEND !== "local") {
       modelStatus.classList.add("hidden");
       modelStatus.innerHTML = "";
       return;
@@ -3444,6 +3449,14 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
     }
     if (bridgeStatus) bridgeStatus.textContent = label;
     if (bridgeDetail) bridgeDetail.textContent = detail;
+    if (beginBtn) {
+      if (kind === "checking") {
+        beginBtn.classList.add("tl-begin--loading");
+        beginBtn.disabled = true;
+      } else {
+        beginBtn.classList.remove("tl-begin--loading");
+      }
+    }
   }
 
   function fetchConfigFrom(base) {
