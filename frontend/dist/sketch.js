@@ -2886,8 +2886,12 @@ function initLandingDoodles() {
 // ── Thesis landing controller ──────────────────────────────────────────────
 // Selected iteration count from the landing stepper, sent to /generate.
 let SELECTED_ITERATIONS = 4;
-let SELECTED_BACKEND = "local";
 let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
+// Seed the backend/profile-dependent defaults from the deployment profile so the
+// first paint (before /config resolves) already matches hosted vs local. Otherwise
+// a hosted page briefly shows local-only UI (the "Ollama runtime" model box) during
+// the Render cold start until /config comes back.
+let SELECTED_BACKEND = DEPLOYMENT_PROFILE === "hosted" ? "gemini" : "local";
 
 (function initThesisLanding() {
   const screen      = document.getElementById("thesis-landing");
@@ -2931,7 +2935,9 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
     live: true,
     recorded: false,
     backend_picker: false,
-    show_model_names: true,
+    // Model names (the "Ollama runtime" box) are a local-only affordance. Default
+    // to the profile so a hosted page never flashes it during the cold start.
+    show_model_names: DEPLOYMENT_PROFILE === "local",
   };
   let runtimeInfo = {};
   let cloudModelName = "";
@@ -3461,7 +3467,12 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
 
   function fetchConfigFrom(base) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+    // Hosted runs on Render's free tier, which spins down when idle. The first
+    // request after idle is held open while the instance wakes (can take ~30-60s),
+    // so give the hosted profile a long timeout to ride out the cold start rather
+    // than aborting early and falling back to the "not ready" state.
+    const timeoutMs = DEPLOYMENT_PROFILE === "hosted" ? 60000 : 5000;
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     return fetch(`${base}/config`, {
       signal: controller.signal,
       mode: "cors",
@@ -3576,18 +3587,35 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
     );
   }
 
+  const COLD_START_DETAIL =
+    "Waking the inference backend — the first request after the instance has been idle can take up to a minute.";
+
   async function loadLiveConfig() {
-    setBridgeState("checking", "checking", "Looking for the inference backend.");
+    setBridgeState(
+      "checking",
+      DEPLOYMENT_PROFILE === "hosted" ? "starting" : "checking",
+      DEPLOYMENT_PROFILE === "hosted" ? COLD_START_DETAIL : "Looking for the inference backend.",
+    );
     for (const base of API_BASE_CANDIDATES) {
       try {
         const cfg = await fetchConfigFrom(base);
         applyLiveConfig(cfg, base);
-        return;
+        return true;
       } catch (err) {
         console.debug("[loadLiveConfig] %s failed: %s", base, err && err.message || err);
       }
     }
+    // Hosted: an unreachable backend on load almost always means the Render
+    // instance is still cold-starting. Keep the "backend is starting" loading
+    // state (the draw button stays disabled) and let scheduleRetry keep polling,
+    // instead of dropping to the offline state that shows a clickable-looking but
+    // dead "draw" button before the backend is actually ready.
+    if (DEPLOYMENT_PROFILE === "hosted") {
+      setBridgeState("checking", "starting", COLD_START_DETAIL);
+      return false;
+    }
     applyOfflineConfig();
+    return false;
   }
 
   if (bridgeRetry) bridgeRetry.addEventListener("click", loadLiveConfig);
@@ -3597,9 +3625,12 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
   loadLiveConfig();
 
   (function scheduleRetry() {
+    // While a hosted backend is still waking, poll quickly so "draw" unlocks the
+    // moment it's ready; once live (or on local) fall back to a slow heartbeat.
+    const delay = DEPLOYMENT_PROFILE === "hosted" && !hasLiveBackend() ? 3000 : 10000;
     setTimeout(() => {
       if (!hasLiveBackend()) loadLiveConfig().then(scheduleRetry).catch(scheduleRetry);
-    }, 10000);
+    }, delay);
   })();
 })();
 
