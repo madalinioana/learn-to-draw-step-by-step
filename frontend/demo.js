@@ -6,313 +6,118 @@
 
 const DEMO_PROMPTS = [
 
-  // ── 1. a cat ─────────────────────────────────────────────────────────────
-  // Same loose doodle vocabulary as the landing-page qualitative example:
-  // tall curled tail, long simple body, small eared head, dot eyes and whiskers.
+  // ── 1. a flower — petals, center, stem; leaves added on the refinement pass.
   {
-    prompt: "a cat",
+    prompt: "a flower",
     iterations: [
       {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M152 290 C148 250 146 212 152 188 C156 170 178 168 188 182 C196 193 188 208 176 205 C169 203 168 193 173 188" stroke-width="1.75"/>
-    <path id="step-2" d="M152 290 C200 270 252 266 300 270" stroke-width="1.75"/>
-    <path id="step-3" d="M334 344 C280 351 205 351 158 344" stroke-width="1.75"/>
-    <path id="step-4" d="M158 344 C152 322 150 305 152 290" stroke-width="1.75"/>
-  </g>
-</svg>`,
-        steps: ["curled tail", "back line", "belly line", "rear line"],
-        reasoning: "Starting with the long body and tall curled tail, but the drawing still lacks the cat's head and details.",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="roughen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="42"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g/><g filter="url(#roughen)"><path id="step-1" d="M 254.4 450.4 C 259.9 346.8 237.5 302.9 254.9 218.5" fill="none" stroke="#1a1a1a"/><path id="step-2" d="M 241.5 203.8 A 14.7 20.4 0 1 0 267.7 203.1 A 19.2 19.1 0 1 0 240.6 200.4" fill="none" stroke="#1a1a1a"/><path id="step-3" d="M 254.4 185.6 Q 281.3 126.5 256.5 109.3 Q 236.0 132.2 256.2 181.1" fill="none" stroke="#1a1a1a"/><path id="step-4" d="M 255.6 213.9 Q 279.5 268.4 259.3 292.4 Q 232.3 272.5 252.9 214.4" fill="none" stroke="#1a1a1a"/><path id="step-5" d="M 236.7 199.1 Q 187.7 177.0 173.6 197.0 Q 186.7 222.3 243.5 200.0" fill="none" stroke="#1a1a1a"/><path id="step-6" d="M 271.5 197.0 Q 323.2 180.0 337.2 202.7 Q 321.3 215.5 270.5 197.9" fill="none" stroke="#1a1a1a"/></g></svg>`,
+        steps: ["stem", "center", "top petal", "bottom petal", "left petal", "right petal"],
+        reasoning: "I will start by drawing the basic structure of a flower: a central stem, a circular center, and four simple petals to establish the overall form and identity of the subject.",
         verdict: "revise",
-        score: 2,
-        ui_message: "body and tail only, needs head and features",
-        feedback_for_artist: "The curled tail and long body suggest a cat, but there is no head, no ears, no face, and no legs. Add the small head and a few identifying details before refining proportions.",
+        score: 6,
+        ui_message: "Add some leaves to the stem.",
+        feedback_for_artist: "You have the basic shape of the flower and the stem down. Now let's add some leaves to the stem to make it look more natural.",
       },
       {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M152 290 C148 250 146 212 152 188 C156 170 178 168 188 182 C196 193 188 208 176 205 C169 203 168 193 173 188" stroke-width="1.75"/>
-    <path id="step-2" d="M152 290 C200 270 252 266 300 270" stroke-width="1.75"/>
-    <path id="step-3" d="M300 270 C298 242 314 224 338 224 C362 224 378 242 376 266 C374 290 358 302 336 300" stroke-width="1.75"/>
-    <path id="step-4" d="M316 228 L312 206 L330 222" stroke-width="1.75"/>
-    <path id="step-5" d="M350 222 L366 204 L368 228" stroke-width="1.75"/>
-    <path id="step-6" d="M336 300 C337 316 336 332 334 344" stroke-width="1.75"/>
-    <path id="step-7" d="M334 344 C280 351 205 351 158 344" stroke-width="1.75"/>
-    <path id="step-8" d="M158 344 C152 322 150 305 152 290" stroke-width="1.75"/>
-  </g>
-</svg>`,
-        steps: ["curled tail", "back line", "head outline", "left ear", "right ear", "chest", "belly line", "rear line"],
-        reasoning: "Added the eared head on the right end of the body, matching the sparse doodle style.",
-        verdict: "revise",
-        score: 4,
-        ui_message: "head and ears added, still blank",
-        feedback_for_artist: "Good progress — the eared head and tall tail now make the subject read as a cat. The face is blank and there are no legs, so the drawing still needs eyes, nose, whiskers, and short legs.",
-      },
-      {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M152 290 C148 250 146 212 152 188 C156 170 178 168 188 182 C196 193 188 208 176 205 C169 203 168 193 173 188" stroke-width="1.75"/>
-    <path id="step-2" d="M152 290 C200 270 252 266 300 270" stroke-width="1.75"/>
-    <path id="step-3" d="M300 270 C298 242 314 224 338 224 C362 224 378 242 376 266 C374 290 358 302 336 300" stroke-width="1.75"/>
-    <path id="step-4" d="M316 228 L312 206 L330 222" stroke-width="1.75"/>
-    <path id="step-5" d="M350 222 L366 204 L368 228" stroke-width="1.75"/>
-    <path id="step-6" d="M336 300 C337 316 336 332 334 344" stroke-width="1.75"/>
-    <path id="step-7" d="M334 344 C280 351 205 351 158 344" stroke-width="1.75"/>
-    <path id="step-8" d="M158 344 C152 322 150 305 152 290" stroke-width="1.75"/>
-    <path id="step-9" d="M196 345 C196 353 196 361 198 367" stroke-width="1.75"/>
-    <path id="step-10" d="M224 346 C224 354 224 361 226 367" stroke-width="1.75"/>
-    <path id="step-11" d="M300 346 C300 354 300 361 302 367" stroke-width="1.75"/>
-    <path id="step-12" d="M328 345 C328 353 328 360 330 366" stroke-width="1.75"/>
-    <path id="step-13" d="M328 256 m-2.6 0 a2.6 2.6 0 1 0 5.2 0 a2.6 2.6 0 1 0 -5.2 0" stroke-width="1.75"/>
-    <path id="step-14" d="M352 256 m-2.6 0 a2.6 2.6 0 1 0 5.2 0 a2.6 2.6 0 1 0 -5.2 0" stroke-width="1.75"/>
-    <path id="step-15" d="M340 268 C343 272 349 272 352 268" stroke-width="1.75"/>
-    <path id="step-16" d="M372 262 L396 258 M374 270 L396 271 M373 278 L395 283" stroke-width="1.75"/>
-  </g>
-</svg>`,
-        steps: ["curled tail", "back line", "head outline", "left ear", "right ear", "chest", "belly line", "rear line", "leg 1", "leg 2", "leg 3", "leg 4", "left eye", "right eye", "nose", "whiskers"],
-        reasoning: "Added the short legs, dot eyes, mouth and whiskers, giving the cat the same sparse hand-drawn look as the paper example.",
-        verdict: "revise",
-        score: 8,
-        ui_message: "clear cat, proportions need one pass",
-        feedback_for_artist: "This is a charming doodle cat: the tall curled tail, the long simple body, the small eared head, the dot eyes and whiskers, and the short legs all read clearly with a confident hand-drawn line. The main remaining issue is proportion — the head sits a touch high and the four legs could be spaced more evenly along the belly.",
-      },
-      {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M152 290 C148 250 146 212 152 188 C156 170 178 168 188 182 C196 193 188 208 176 205 C169 203 168 193 173 188" stroke-width="1.75"/>
-    <path id="step-2" d="M152 290 C200 270 252 266 300 270" stroke-width="1.75"/>
-    <path id="step-3" d="M300 270 C298 244 315 226 338 226 C361 226 376 243 375 266 C373 288 357 300 336 298" stroke-width="1.75"/>
-    <path id="step-4" d="M316 229 L313 209 L330 223" stroke-width="1.75"/>
-    <path id="step-5" d="M350 223 L365 207 L367 229" stroke-width="1.75"/>
-    <path id="step-6" d="M336 298 C337 314 336 330 334 344" stroke-width="1.75"/>
-    <path id="step-7" d="M334 344 C280 351 205 351 158 344" stroke-width="1.75"/>
-    <path id="step-8" d="M158 344 C152 322 150 305 152 290" stroke-width="1.75"/>
-    <path id="step-9" d="M186 345 C187 354 189 361 192 366" stroke-width="1.75"/>
-    <path id="step-10" d="M232 346 C233 354 235 361 238 366" stroke-width="1.75"/>
-    <path id="step-11" d="M286 346 C285 354 283 361 280 366" stroke-width="1.75"/>
-    <path id="step-12" d="M326 345 C324 353 321 360 318 365" stroke-width="1.75"/>
-    <path id="step-13" d="M328 256 m-2.6 0 a2.6 2.6 0 1 0 5.2 0 a2.6 2.6 0 1 0 -5.2 0" stroke-width="1.75"/>
-    <path id="step-14" d="M352 256 m-2.6 0 a2.6 2.6 0 1 0 5.2 0 a2.6 2.6 0 1 0 -5.2 0" stroke-width="1.75"/>
-    <path id="step-15" d="M340 268 C343 272 349 272 352 268" stroke-width="1.75"/>
-    <path id="step-16" d="M372 262 L396 258 M374 270 L396 271 M373 278 L395 283" stroke-width="1.75"/>
-  </g>
-</svg>`,
-        steps: ["curled tail", "back line", "head outline", "left ear", "right ear", "chest", "belly line", "rear line", "leg 1", "leg 2", "leg 3", "leg 4", "left eye", "right eye", "nose", "whiskers"],
-        reasoning: "Lowered the head slightly and spaced the short legs more evenly while preserving the same doodle-cat style.",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="roughen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="42"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g><path id="step-7" d="M 254.4 351.3 Q 209.6 340.7 210.9 311.1 Q 254.0 309.2 255.0 351.6" fill="none" stroke="#1a1a1a"/><path id="step-8" d="M 256.4 380.0 Q 300.6 369.6 298.8 339.8 Q 255.6 339.0 254.4 379.3" fill="none" stroke="#1a1a1a"/></g><g filter="url(#roughen)"><path id="step-1" d="M 254.4 450.4 C 259.9 346.8 237.5 302.9 254.9 218.5" fill="none" stroke="#1a1a1a"/><path id="step-2" d="M 241.5 203.8 A 14.7 20.4 0 1 0 267.7 203.1 A 19.2 19.1 0 1 0 240.6 200.4" fill="none" stroke="#1a1a1a"/><path id="step-3" d="M 254.4 185.6 Q 281.3 126.5 256.5 109.3 Q 236.0 132.2 256.2 181.1" fill="none" stroke="#1a1a1a"/><path id="step-4" d="M 255.6 213.9 Q 279.5 268.4 259.3 292.4 Q 232.3 272.5 252.9 214.4" fill="none" stroke="#1a1a1a"/><path id="step-5" d="M 236.7 199.1 Q 187.7 177.0 173.6 197.0 Q 186.7 222.3 243.5 200.0" fill="none" stroke="#1a1a1a"/><path id="step-6" d="M 271.5 197.0 Q 323.2 180.0 337.2 202.7 Q 321.3 215.5 270.5 197.9" fill="none" stroke="#1a1a1a"/></g></svg>`,
+        steps: ["stem", "center", "top petal", "bottom petal", "left petal", "right petal", "left leaf", "right leaf"],
+        reasoning: "Adding two simple leaves to the stem to enhance the natural look of the flower. One leaf extends to the left and one to the right, using quadratic Bézier curves to create a leaf-like shape attached to the existing stem path.",
         verdict: "accept",
         score: 9,
-        ui_message: "a complete doodle cat",
-        feedback_for_artist: "The cat is fully realised as a spare academic doodle: a tall curled tail, long body, compact eared head, dot eyes, simple mouth, whiskers, and evenly spaced short legs. The line is confident and the drawing reads clearly.",
+        ui_message: "The drawing is complete!",
+        feedback_for_artist: "",
       },
     ],
   },
 
-  // ── 2. a lighthouse ──────────────────────────────────────────────────────
+  // ── 2. an owl on a branch — body first, then beak, wings, talons, perch.
   {
-    prompt: "a lighthouse",
+    prompt: "an owl on a branch",
     iterations: [
       {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M 240 380 L 238 300 L 240 200 L 272 200 L 274 300 L 272 380 Z" stroke-width="2.2" opacity="0.90"/>
-  </g>
-</svg>`,
-        steps: ["tower body"],
-        reasoning: "Basic rectangular tower shape.",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="roughen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="42"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g/><g filter="url(#roughen)"><path id="step-1" d="M 202.3 375.9 C 158.7 376.2 158.0 183.4 253.9 176.1 C 356.4 176.6 348.1 377.4 315.4 383.5" fill="none" stroke="#1a1a1a"/><path id="step-2" d="M 232.2 240.3 A 10.7 18.0 0 1 1 228.1 268.7 A 18.9 10.6 0 1 1 230.6 240.7" fill="none" stroke="#1a1a1a"/><path id="step-3" d="M 279.1 239.1 A 18.5 14.8 0 1 1 279.5 267.3 A 16.2 16.6 0 1 1 283.7 241.1" fill="none" stroke="#1a1a1a"/><path id="step-4" d="M 99.9 420.3 Q 255.0 382.3 413.0 420.4" fill="none" stroke="#1a1a1a"/></g></svg>`,
+        steps: ["owl body and head", "left eye", "right eye", "branch"],
+        reasoning: "I will create the basic silhouette of an owl perched on a branch. This includes a rounded body/head shape, two large circular eyes to establish the owl's identity, and a simple curved line for the branch.",
         verdict: "revise",
-        score: 2,
-        ui_message: "just a rectangle — needs taper, lantern, detail",
-        feedback_for_artist: "This is a plain rectangle, which could be anything. A lighthouse has a tapered silhouette (wider at base, narrower at top), a distinct lantern room at the summit, and horizontal stripe bands across the body. None of those are present.",
+        score: 3,
+        ui_message: "Add a beak to the face.",
+        feedback_for_artist: "You have the basic shape and eyes down. Now let's add a beak to make it look like a bird.",
       },
       {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M 234 378 C 232 345,228 305,226 268 C 224 231,228 212,236 202 C 242 194,270 194,276 202 C 284 212,288 231,286 268 C 284 305,280 345,278 378 Z" stroke-width="2.2" opacity="0.92"/>
-    <path id="step-2" d="M 224 378 L 288 378" stroke-width="2.2" opacity="0.90"/>
-    <path id="step-3" d="M 236 202 C 236 193,240 186,244 181 C 248 176,256 173,256 173 C 256 173,264 176,268 181 C 272 186,276 193,276 202" stroke-width="2.0" opacity="0.88"/>
-    <path id="step-4" d="M 244 181 C 244 177,248 173,256 171 C 264 173,268 177,268 181" stroke-width="1.8" opacity="0.85"/>
-  </g>
-</svg>`,
-        steps: ["tower body", "base line", "lantern housing", "lantern roof"],
-        reasoning: "Added taper to the tower and a small lantern room with a pointed cap.",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="roughen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="42"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g><path id="step-5" d="M 253.8 254.0 L 258.5 274.3 L 263.3 256.7" fill="none" stroke="#1a1a1a"/></g><g filter="url(#roughen)"><path id="step-1" d="M 202.3 375.9 C 158.7 376.2 158.0 183.4 253.9 176.1 C 356.4 176.6 348.1 377.4 315.4 383.5" fill="none" stroke="#1a1a1a"/><path id="step-2" d="M 232.2 240.3 A 10.7 18.0 0 1 1 228.1 268.7 A 18.9 10.6 0 1 1 230.6 240.7" fill="none" stroke="#1a1a1a"/><path id="step-3" d="M 279.1 239.1 A 18.5 14.8 0 1 1 279.5 267.3 A 16.2 16.6 0 1 1 283.7 241.1" fill="none" stroke="#1a1a1a"/><path id="step-4" d="M 99.9 420.3 Q 255.0 382.3 413.0 420.4" fill="none" stroke="#1a1a1a"/></g></svg>`,
+        steps: ["owl body and head", "left eye", "right eye", "branch", "beak"],
+        reasoning: "Adding a small, downward-pointing beak between the eyes to clearly identify the subject as a bird.",
         verdict: "revise",
         score: 5,
-        ui_message: "needs stripe bands and coastal rocks",
-        feedback_for_artist: "Much better — the silhouette is now recognisably a lighthouse. Two horizontal stripe bands across the mid-section and a rough rocky base would make this unambiguously coastal.",
+        ui_message: "Add the wings to the sides of the owl.",
+        feedback_for_artist: "I see the body, eyes, and beak are all there. Now let's add the wings to the sides of the body.",
       },
       {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M 234 378 C 232 345,228 305,226 268 C 224 231,228 212,236 202 C 242 194,270 194,276 202 C 284 212,288 231,286 268 C 284 305,280 345,278 378 Z" stroke-width="2.2" opacity="0.92"/>
-    <path id="step-2" d="M 224 378 L 288 378" stroke-width="2.2" opacity="0.90"/>
-    <path id="step-3" d="M 236 202 C 236 193,240 186,244 181 C 248 176,256 173,256 173 C 256 173,264 176,268 181 C 272 186,276 193,276 202" stroke-width="2.0" opacity="0.88"/>
-    <path id="step-4" d="M 244 181 C 244 177,248 173,256 171 C 264 173,268 177,268 181" stroke-width="1.8" opacity="0.85"/>
-    <path id="step-5" d="M 227 298 C 231 296,235 295,240 296 C 248 297,256 297,264 296 C 269 295,273 296,277 298" stroke-width="1.6" opacity="0.80"/>
-    <path id="step-6" d="M 229 338 L 275 338" stroke-width="1.6" opacity="0.80"/>
-    <path id="step-7" d="M 218 382 C 212 376,204 374,196 378 C 206 378,210 384,220 386 C 226 383,228 380,226 378 M 294 382 C 300 376,308 374,316 378 C 306 378,302 384,292 386 C 286 383,284 380,286 378" stroke-width="1.8" opacity="0.82"/>
-  </g>
-</svg>`,
-        steps: ["tower body", "base line", "lantern housing", "lantern roof", "upper band", "lower band", "rocks"],
-        reasoning: "Added two horizontal stripe bands across the tower and rough rock shapes flanking the base.",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="roughen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="42"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g><path id="step-5" d="M 253.8 254.0 L 258.5 274.3 L 263.3 256.7" fill="none" stroke="#1a1a1a"/><path id="step-6" d="M 198.6 237.4 Q 150.0 304.1 213.5 363.9" stroke="#1a1a1a" fill="none"/><path id="step-7" d="M 309.8 238.7 Q 358.6 299.8 299.1 356.9" stroke="#1a1a1a" fill="none"/></g><g filter="url(#roughen)"><path id="step-1" d="M 202.3 375.9 C 158.7 376.2 158.0 183.4 253.9 176.1 C 356.4 176.6 348.1 377.4 315.4 383.5" fill="none" stroke="#1a1a1a"/><path id="step-2" d="M 232.2 240.3 A 10.7 18.0 0 1 1 228.1 268.7 A 18.9 10.6 0 1 1 230.6 240.7" fill="none" stroke="#1a1a1a"/><path id="step-3" d="M 279.1 239.1 A 18.5 14.8 0 1 1 279.5 267.3 A 16.2 16.6 0 1 1 283.7 241.1" fill="none" stroke="#1a1a1a"/><path id="step-4" d="M 99.9 420.3 Q 255.0 382.3 413.0 420.4" fill="none" stroke="#1a1a1a"/><path id="step-5" d="M 253.8 254.0 L 258.5 274.3 L 263.3 256.7" fill="none" stroke="#1a1a1a"/></g></svg>`,
+        steps: ["owl body and head", "left eye", "right eye", "branch", "beak", "left wing", "right wing"],
+        reasoning: "Adding simple curved lines to represent the wings on either side of the owl's body to give it a more complete silhouette.",
         verdict: "revise",
         score: 7,
-        ui_message: "light beams would complete the scene",
-        feedback_for_artist: "The lighthouse reads very clearly now with the banded pattern and rocky base. The one missing element is light beams radiating from the lantern — even two or three diverging lines would complete the scene and make it unmistakably functional.",
+        ui_message: "Add the talons gripping the branch.",
+        feedback_for_artist: "You've got the main shape and the wings down. Now let's add the talons gripping the branch.",
       },
       {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M 234 378 C 232 345,228 305,226 268 C 224 231,228 212,236 202 C 242 194,270 194,276 202 C 284 212,288 231,286 268 C 284 305,280 345,278 378 Z" stroke-width="2.2" opacity="0.92"/>
-    <path id="step-2" d="M 224 378 L 288 378" stroke-width="2.2" opacity="0.90"/>
-    <path id="step-3" d="M 236 202 C 236 193,240 186,244 181 C 248 176,256 173,256 173 C 256 173,264 176,268 181 C 272 186,276 193,276 202" stroke-width="2.0" opacity="0.88"/>
-    <path id="step-4" d="M 244 181 C 244 177,248 173,256 171 C 264 173,268 177,268 181" stroke-width="1.8" opacity="0.85"/>
-    <path id="step-5" d="M 227 298 C 231 296,235 295,240 296 C 248 297,256 297,264 296 C 269 295,273 296,277 298" stroke-width="1.6" opacity="0.80"/>
-    <path id="step-6" d="M 229 338 L 275 338" stroke-width="1.6" opacity="0.80"/>
-    <path id="step-7" d="M 218 382 C 212 376,204 374,196 378 C 206 378,210 384,220 386 C 226 383,228 380,226 378 M 294 382 C 300 376,308 374,316 378 C 306 378,302 384,292 386 C 286 383,284 380,286 378" stroke-width="1.8" opacity="0.82"/>
-    <path id="step-8" d="M 256 174 C 248 161,234 148,218 138 M 256 174 C 258 159,261 143,269 129 M 256 174 C 264 162,278 150,294 141" stroke-width="1.4" opacity="0.68"/>
-  </g>
-</svg>`,
-        steps: ["tower body", "base line", "lantern housing", "lantern roof", "upper band", "lower band", "rocks", "light beams"],
-        reasoning: "Added three diverging light beams radiating from the lantern into the upper sky.",
-        verdict: "revise",
-        score: 8,
-        ui_message: "a door would add the final touch",
-        feedback_for_artist: "Excellent — the beams make the lighthouse feel alive and functional. The only small refinement would be a simple arched door at the base of the tower, a classic lighthouse detail that completes the character.",
-      },
-      {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M 234 378 C 232 345,228 305,226 268 C 224 231,228 212,236 202 C 242 194,270 194,276 202 C 284 212,288 231,286 268 C 284 305,280 345,278 378 Z" stroke-width="2.2" opacity="0.92"/>
-    <path id="step-2" d="M 224 378 L 288 378" stroke-width="2.2" opacity="0.90"/>
-    <path id="step-3" d="M 236 202 C 236 193,240 186,244 181 C 248 176,256 173,256 173 C 256 173,264 176,268 181 C 272 186,276 193,276 202" stroke-width="2.0" opacity="0.88"/>
-    <path id="step-4" d="M 244 181 C 244 177,248 173,256 171 C 264 173,268 177,268 181" stroke-width="1.8" opacity="0.85"/>
-    <path id="step-5" d="M 227 298 C 231 296,235 295,240 296 C 248 297,256 297,264 296 C 269 295,273 296,277 298" stroke-width="1.6" opacity="0.80"/>
-    <path id="step-6" d="M 229 338 L 275 338" stroke-width="1.6" opacity="0.80"/>
-    <path id="step-7" d="M 218 382 C 212 376,204 374,196 378 C 206 378,210 384,220 386 C 226 383,228 380,226 378 M 294 382 C 300 376,308 374,316 378 C 306 378,302 384,292 386 C 286 383,284 380,286 378" stroke-width="1.8" opacity="0.82"/>
-    <path id="step-8" d="M 256 174 C 248 161,234 148,218 138 M 256 174 C 258 159,261 143,269 129 M 256 174 C 264 162,278 150,294 141" stroke-width="1.4" opacity="0.68"/>
-    <path id="step-9" d="M 248 378 L 248 358 C 248 352,264 352,264 358 L 264 378" stroke-width="1.6" opacity="0.80"/>
-  </g>
-</svg>`,
-        steps: ["tower body", "base line", "lantern housing", "lantern roof", "upper band", "lower band", "rocks", "light beams", "door"],
-        reasoning: "Added a simple arched door at the base of the tower.",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="roughen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="42"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g><path id="step-5" d="M 253.8 254.0 L 258.5 274.3 L 263.3 256.7" fill="none" stroke="#1a1a1a"/><path id="step-6" d="M 198.6 237.4 Q 150.0 304.1 213.5 363.9" stroke="#1a1a1a" fill="none"/><path id="step-7" d="M 309.8 238.7 Q 358.6 299.8 299.1 356.9" stroke="#1a1a1a" fill="none"/><path id="step-8" d="M 224.4 384.1 q -5.2 14.1 3.7 13.1 M 233.2 385.9 q 7.5 12.4 -6.0 9.7" fill="none" stroke="#1a1a1a"/><path id="step-9" d="M 278.6 381.9 q -6.3 15.9 0.5 13.7 M 288.3 382.2 q 6.6 8.7 -5.0 11.4" fill="none" stroke="#1a1a1a"/></g><g filter="url(#roughen)"><path id="step-1" d="M 202.3 375.9 C 158.7 376.2 158.0 183.4 253.9 176.1 C 356.4 176.6 348.1 377.4 315.4 383.5" fill="none" stroke="#1a1a1a"/><path id="step-2" d="M 232.2 240.3 A 10.7 18.0 0 1 1 228.1 268.7 A 18.9 10.6 0 1 1 230.6 240.7" fill="none" stroke="#1a1a1a"/><path id="step-3" d="M 279.1 239.1 A 18.5 14.8 0 1 1 279.5 267.3 A 16.2 16.6 0 1 1 283.7 241.1" fill="none" stroke="#1a1a1a"/><path id="step-4" d="M 99.9 420.3 Q 255.0 382.3 413.0 420.4" fill="none" stroke="#1a1a1a"/><path id="step-5" d="M 253.8 254.0 L 258.5 274.3 L 263.3 256.7" fill="none" stroke="#1a1a1a"/><path id="step-6" d="M 198.6 237.4 Q 150.0 304.1 213.5 363.9" fill="none" stroke="#1a1a1a"/><path id="step-7" d="M 309.8 238.7 Q 358.6 299.8 299.1 356.9" fill="none" stroke="#1a1a1a"/></g></svg>`,
+        steps: ["owl body and head", "left eye", "right eye", "branch", "beak", "left wing", "right wing", "left talons", "right talons"],
+        reasoning: "Adding small curved lines at the base of the owl's body to represent talons gripping the branch, ensuring they overlap the branch path for a realistic grip.",
         verdict: "accept",
         score: 9,
-        ui_message: "a complete lighthouse",
-        feedback_for_artist: "The drawing is fully resolved — tapered tower, lantern room, stripe bands, rocky base, radiating light beams, and a small door. Every element reads clearly and the composition is well balanced.",
+        ui_message: "Great job!",
+        feedback_for_artist: "",
       },
     ],
   },
 
-  // ── 3. a smiling sun ─────────────────────────────────────────────────────
+  // ── 3. a hot air balloon — envelope, basket, ropes, panel lines, burner.
   {
-    prompt: "a smiling sun",
+    prompt: "a hot air balloon",
     iterations: [
       {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M 256 340 C 212 340,176 304,176 258 C 176 212,212 176,256 176 C 300 176,336 212,336 258 C 336 304,300 340,256 340" stroke-width="2.4" opacity="0.92"/>
-  </g>
-</svg>`,
-        steps: ["sun disc"],
-        reasoning: "Just the circular disc so far.",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="roughen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="42"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g/><g filter="url(#roughen)"><path id="step-1" d="M 253.3 102.5 C 160.9 98.1 143.7 252.6 176.8 298.6 C 201.8 321.9 313.8 318.4 335.9 296.8 C 372.2 247.4 347.9 97.9 260.3 101.6 Z" stroke="#1a1a1a" fill="none"/><path id="step-2" d="M 184.3 296.4 Q 252.6 321.7 332.7 298.9" stroke="#1a1a1a" fill="none"/><path id="step-3" d="M 198.7 312.6 L 207.7 320.7 213.1 342.7 226.7 358.6 229.0 373.7 M 310.8 309.6 L 302.2 322.4 297.0 338.8 290.9 352.1 284.8 372.0" stroke="#1a1a1a" fill="none"/><path id="step-4" d="M 225.5 367.5 L 247.5 369.4 267.2 365.8 286.1 368.2 L 283.7 388.7 283.4 401.9 289.9 423.8 L 271.0 420.9 250.5 423.2 241.5 419.4 216.4 420.9 Z" stroke="#1a1a1a" fill="none"/></g></svg>`,
+        steps: ["balloon envelope", "balloon mouth", "connecting ropes", "basket"],
+        reasoning: "Starting with the most basic structural elements of a hot air balloon: the large envelope (balloon part), the opening at the bottom, the connecting lines, and the simple basket shape.",
         verdict: "revise",
-        score: 2,
-        ui_message: "only a circle — needs face and rays",
-        feedback_for_artist: "This is just a bare circle. A smiling sun needs at minimum a curved smile on the face, eyes, and rays radiating outward to distinguish it from any other circular subject.",
+        score: 6,
+        ui_message: "Add the burner.",
+        feedback_for_artist: "You have the main shape and the basket down. Now let's add the burner between the balloon and the basket.",
       },
       {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M 256 340 C 212 340,176 304,176 258 C 176 212,212 176,256 176 C 300 176,336 212,336 258 C 336 304,300 340,256 340" stroke-width="2.4" opacity="0.92"/>
-    <path id="step-2" d="M 230 244 C 234 236,244 234,250 240 C 244 242,236 250,230 244 Z" stroke-width="1.8" opacity="0.88"/>
-    <path id="step-3" d="M 262 244 C 266 236,276 234,282 240 C 276 242,268 250,262 244 Z" stroke-width="1.8" opacity="0.88"/>
-    <path id="step-4" d="M 224 282 C 234 298,278 298,288 282" stroke-width="2.0" opacity="0.90"/>
-  </g>
-</svg>`,
-        steps: ["sun disc", "left eye", "right eye", "smile"],
-        reasoning: "Added almond eyes and a wide smile arc.",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="roughen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="42"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g><path id="step-5" d="M 245.5 323.2 L 266.4 320.8 L 267.6 334.2 L 244.3 336.4 Z" fill="none" stroke="#1a1a1a"/><path id="step-6" d="M 257.6 320.4 L 254.3 313.8" fill="none" stroke="#1a1a1a"/></g><g filter="url(#roughen)"><path id="step-1" d="M 253.3 102.5 C 160.9 98.1 143.7 252.6 176.8 298.6 C 201.8 321.9 313.8 318.4 335.9 296.8 C 372.2 247.4 347.9 97.9 260.3 101.6 Z" stroke="#1a1a1a" fill="none"/><path id="step-2" d="M 184.3 296.4 Q 252.6 321.7 332.7 298.9" stroke="#1a1a1a" fill="none"/><path id="step-3" d="M 198.7 312.6 L 207.7 320.7 213.1 342.7 226.7 358.6 229.0 373.7 M 310.8 309.6 L 302.2 322.4 297.0 338.8 290.9 352.1 284.8 372.0" stroke="#1a1a1a" fill="none"/><path id="step-4" d="M 225.5 367.5 L 247.5 369.4 267.2 365.8 286.1 368.2 L 283.7 388.7 283.4 401.9 289.9 423.8 L 271.0 420.9 250.5 423.2 241.5 419.4 216.4 420.9 Z" stroke="#1a1a1a" fill="none"/></g></svg>`,
+        steps: ["balloon envelope", "balloon mouth", "connecting ropes", "basket", "burner body", "burner flame"],
+        reasoning: "Adding the burner unit and a small flame indicator between the balloon envelope and the basket to complete the functional assembly.",
         verdict: "revise",
-        score: 5,
-        ui_message: "no rays — reads as a face not a sun",
-        feedback_for_artist: "The face is warm and expressive but without rays the circle looks like a generic face floating in space. Add 8 rays at cardinal and diagonal positions to make it unambiguously a sun.",
+        score: 6,
+        ui_message: "The hot air balloon looks complete.",
+        feedback_for_artist: "All the main parts of the hot air balloon read clearly now, so the sketch looks complete.",
       },
       {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M 256 340 C 212 340,176 304,176 258 C 176 212,212 176,256 176 C 300 176,336 212,336 258 C 336 304,300 340,256 340" stroke-width="2.4" opacity="0.92"/>
-    <path id="step-2" d="M 230 244 C 234 236,244 234,250 240 C 244 242,236 250,230 244 Z" stroke-width="1.8" opacity="0.88"/>
-    <path id="step-3" d="M 262 244 C 266 236,276 234,282 240 C 276 242,268 250,262 244 Z" stroke-width="1.8" opacity="0.88"/>
-    <path id="step-4" d="M 224 282 C 234 298,278 298,288 282" stroke-width="2.0" opacity="0.90"/>
-    <path id="step-5" d="M 256 154 C 255 142,256 130,257 120" stroke-width="1.8" opacity="0.82"/>
-    <path id="step-6" d="M 256 362 C 255 374,256 386,257 396" stroke-width="1.8" opacity="0.82"/>
-    <path id="step-7" d="M 154 258 C 142 257,130 258,120 259" stroke-width="1.8" opacity="0.82"/>
-    <path id="step-8" d="M 358 258 C 370 257,382 258,392 259" stroke-width="1.8" opacity="0.82"/>
-    <path id="step-9" d="M 184 188 C 176 180,168 170,161 162" stroke-width="1.8" opacity="0.82"/>
-    <path id="step-10" d="M 328 188 C 336 180,344 170,351 162" stroke-width="1.8" opacity="0.82"/>
-    <path id="step-11" d="M 184 328 C 176 336,168 346,161 354" stroke-width="1.8" opacity="0.82"/>
-    <path id="step-12" d="M 328 328 C 336 336,344 346,351 354" stroke-width="1.8" opacity="0.82"/>
-  </g>
-</svg>`,
-        steps: ["sun disc", "left eye", "right eye", "smile", "top ray", "bottom ray", "left ray", "right ray", "top-left ray", "top-right ray", "bottom-left ray", "bottom-right ray"],
-        reasoning: "Added eight rays at cardinal and diagonal directions.",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="roughen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="42"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g><path id="step-5" d="M 245.5 323.2 L 266.4 320.8 L 267.6 334.2 L 244.3 336.4 Z" fill="none" stroke="#1a1a1a"/><path id="step-6" d="M 257.6 320.4 L 254.3 313.8" fill="none" stroke="#1a1a1a"/></g><g filter="url(#roughen)"><path id="step-1" d="M 253.3 102.5 C 160.9 98.1 143.7 252.6 176.8 298.6 C 201.8 321.9 313.8 318.4 335.9 296.8 C 372.2 247.4 347.9 97.9 260.3 101.6 Z" stroke="#1a1a1a" fill="none"/><path id="step-2" d="M 184.3 296.4 Q 252.6 321.7 332.7 298.9" stroke="#1a1a1a" fill="none"/><path id="step-3" d="M 198.7 312.6 L 207.7 320.7 213.1 342.7 226.7 358.6 229.0 373.7 M 310.8 309.6 L 302.2 322.4 297.0 338.8 290.9 352.1 284.8 372.0" stroke="#1a1a1a" fill="none"/><path id="step-4" d="M 225.5 367.5 L 247.5 369.4 267.2 365.8 286.1 368.2 L 283.7 388.7 283.4 401.9 289.9 423.8 L 271.0 420.9 250.5 423.2 241.5 419.4 216.4 420.9 Z" stroke="#1a1a1a" fill="none"/></g></svg>`,
+        steps: ["balloon envelope", "balloon mouth", "connecting ropes", "basket", "burner body", "burner flame"],
+        reasoning: "Subject reads clearly; holding the drawing.",
         verdict: "revise",
         score: 7,
-        ui_message: "rays are thin — vary their length for warmth",
-        feedback_for_artist: "The sun now reads correctly with all eight rays. To push the warmth further, try making the cardinal rays slightly longer than the diagonal ones — alternating lengths give the sun a livelier, more energetic feel.",
+        ui_message: "Add some vertical panel lines to the balloon.",
+        feedback_for_artist: "You have all the main components in place. Now, let's add some vertical panel lines to the envelope to give it that classic balloon look.",
       },
       {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M 256 340 C 212 340,176 304,176 258 C 176 212,212 176,256 176 C 300 176,336 212,336 258 C 336 304,300 340,256 340" stroke-width="2.4" opacity="0.92"/>
-    <path id="step-2" d="M 230 244 C 234 236,244 234,250 240 C 244 242,236 250,230 244 Z" stroke-width="1.8" opacity="0.88"/>
-    <path id="step-3" d="M 262 244 C 266 236,276 234,282 240 C 276 242,268 250,262 244 Z" stroke-width="1.8" opacity="0.88"/>
-    <path id="step-4" d="M 224 282 C 234 298,278 298,288 282" stroke-width="2.0" opacity="0.90"/>
-    <path id="step-5" d="M 256 152 C 255 138,256 124,257 112" stroke-width="2.0" opacity="0.84"/>
-    <path id="step-6" d="M 256 364 C 255 378,256 392,257 404" stroke-width="2.0" opacity="0.84"/>
-    <path id="step-7" d="M 152 258 C 138 257,124 258,112 259" stroke-width="2.0" opacity="0.84"/>
-    <path id="step-8" d="M 360 258 C 374 257,388 258,400 259" stroke-width="2.0" opacity="0.84"/>
-    <path id="step-9" d="M 186 188 C 179 181,172 172,165 164" stroke-width="1.6" opacity="0.76"/>
-    <path id="step-10" d="M 326 188 C 333 181,340 172,347 164" stroke-width="1.6" opacity="0.76"/>
-    <path id="step-11" d="M 186 328 C 179 335,172 344,165 352" stroke-width="1.6" opacity="0.76"/>
-    <path id="step-12" d="M 326 328 C 333 335,340 344,347 352" stroke-width="1.6" opacity="0.76"/>
-  </g>
-</svg>`,
-        steps: ["sun disc", "left eye", "right eye", "smile", "top ray", "bottom ray", "left ray", "right ray", "top-left ray", "top-right ray", "bottom-left ray", "bottom-right ray"],
-        reasoning: "Made cardinal rays longer and slightly heavier than the diagonal ones for a livelier alternating rhythm.",
-        verdict: "revise",
-        score: 8,
-        ui_message: "rosy cheeks would add personality",
-        feedback_for_artist: "The alternating ray lengths give the sun a much more dynamic character. One small addition that would add warmth and personality: a small arc or dot on each cheek to suggest a rosy blush.",
-      },
-      {
-        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <g fill="none" stroke="#1a1a1a" stroke-linecap="round" stroke-linejoin="round">
-    <path id="step-1" d="M 256 340 C 212 340,176 304,176 258 C 176 212,212 176,256 176 C 300 176,336 212,336 258 C 336 304,300 340,256 340" stroke-width="2.4" opacity="0.92"/>
-    <path id="step-2" d="M 230 244 C 234 236,244 234,250 240 C 244 242,236 250,230 244 Z" stroke-width="1.8" opacity="0.88"/>
-    <path id="step-3" d="M 262 244 C 266 236,276 234,282 240 C 276 242,268 250,262 244 Z" stroke-width="1.8" opacity="0.88"/>
-    <path id="step-4" d="M 224 282 C 234 298,278 298,288 282" stroke-width="2.0" opacity="0.90"/>
-    <path id="step-5" d="M 256 152 C 255 138,256 124,257 112" stroke-width="2.0" opacity="0.84"/>
-    <path id="step-6" d="M 256 364 C 255 378,256 392,257 404" stroke-width="2.0" opacity="0.84"/>
-    <path id="step-7" d="M 152 258 C 138 257,124 258,112 259" stroke-width="2.0" opacity="0.84"/>
-    <path id="step-8" d="M 360 258 C 374 257,388 258,400 259" stroke-width="2.0" opacity="0.84"/>
-    <path id="step-9" d="M 186 188 C 179 181,172 172,165 164" stroke-width="1.6" opacity="0.76"/>
-    <path id="step-10" d="M 326 188 C 333 181,340 172,347 164" stroke-width="1.6" opacity="0.76"/>
-    <path id="step-11" d="M 186 328 C 179 335,172 344,165 352" stroke-width="1.6" opacity="0.76"/>
-    <path id="step-12" d="M 326 328 C 333 335,340 344,347 352" stroke-width="1.6" opacity="0.76"/>
-    <path id="step-13" d="M 210 274 C 214 270,222 270,224 274 C 222 278,214 278,210 274" stroke-width="1.4" opacity="0.65"/>
-    <path id="step-14" d="M 288 274 C 292 270,300 270,302 274 C 300 278,292 278,288 274" stroke-width="1.4" opacity="0.65"/>
-  </g>
-</svg>`,
-        steps: ["sun disc", "left eye", "right eye", "smile", "top ray", "bottom ray", "left ray", "right ray", "top-left ray", "top-right ray", "bottom-left ray", "bottom-right ray", "left cheek", "right cheek"],
-        reasoning: "Added small oval blush marks on each cheek for warmth and personality.",
+        svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="roughen" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="42"/><feDisplacementMap in="SourceGraphic" scale="1.2"/></filter></defs><g><path id="step-5" d="M 245.5 323.2 L 266.4 320.8 L 267.6 334.2 L 244.3 336.4 Z" fill="none" stroke="#1a1a1a"/><path id="step-6" d="M 257.6 320.4 L 254.3 313.8" fill="none" stroke="#1a1a1a"/><path id="step-7" d="M 206.3 127.7 Q 217.0 202.7 212.0 296.8 M 256.5 100.9 L 258.0 152.8 254.3 198.7 256.7 245.3 253.9 293.8 M 305.7 128.5 Q 292.2 203.0 302.9 297.9" fill="none" stroke="#1a1a1a"/></g><g filter="url(#roughen)"><path id="step-1" d="M 253.3 102.5 C 160.9 98.1 143.7 252.6 176.8 298.6 C 201.8 321.9 313.8 318.4 335.9 296.8 C 372.2 247.4 347.9 97.9 260.3 101.6 Z" stroke="#1a1a1a" fill="none"/><path id="step-2" d="M 184.3 296.4 Q 252.6 321.7 332.7 298.9" stroke="#1a1a1a" fill="none"/><path id="step-3" d="M 198.7 312.6 L 207.7 320.7 213.1 342.7 226.7 358.6 229.0 373.7 M 310.8 309.6 L 302.2 322.4 297.0 338.8 290.9 352.1 284.8 372.0" stroke="#1a1a1a" fill="none"/><path id="step-4" d="M 225.5 367.5 L 247.5 369.4 267.2 365.8 286.1 368.2 L 283.7 388.7 283.4 401.9 289.9 423.8 L 271.0 420.9 250.5 423.2 241.5 419.4 216.4 420.9 Z" stroke="#1a1a1a" fill="none"/><path id="step-5" d="M 245.5 323.2 L 266.4 320.8 L 267.6 334.2 L 244.3 336.4 Z" fill="none" stroke="#1a1a1a"/><path id="step-6" d="M 257.6 320.4 L 254.3 313.8" fill="none" stroke="#1a1a1a"/></g></svg>`,
+        steps: ["balloon envelope", "balloon mouth", "connecting ropes", "basket", "burner body", "burner flame", "panel lines"],
+        reasoning: "To give the hot air balloon envelope a classic segmented look, I will add three curved vertical lines (panel lines) that follow the contour of the balloon, extending from the top curve down to the mouth of the envelope.",
         verdict: "accept",
-        score: 9,
-        ui_message: "warm, sunny, and full of character",
-        feedback_for_artist: "The sun is now fully expressive — lively alternating rays, a broad smile, and blushing cheeks. The composition is balanced and the subject is immediately readable. A very satisfying result.",
+        score: 10,
+        ui_message: "Great job!",
+        feedback_for_artist: "",
       },
     ],
   },
 ];
+
 
 // ── Playback engine ───────────────────────────────────────────────────────
 // Fires handleEvent() calls with realistic inter-event delays, so every

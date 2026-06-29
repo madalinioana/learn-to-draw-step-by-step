@@ -1169,7 +1169,7 @@ function doodleStrokeEase(t) {
 }
 
 function doodleDrawDuration(len) {
-  return Math.max(360, Math.min(1200, len * 4.0));
+  return Math.max(660, Math.min(2200, len * 7.4));
 }
 
 function artStrokeWidth(bounds) {
@@ -3134,18 +3134,18 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
       while (!_doodleAnimStop && exampleRunning && token === exampleToken) {
         // Draw stroke by stroke with restrained figure-like pacing.
         for (let i = 0; i < paths.length; i++) {
-          const drawMs = Math.max(360, Math.min(1200, lens[i] * 4.0));
+          const drawMs = Math.max(660, Math.min(2200, lens[i] * 7.4));
           await animPath(paths[i], lens[i], true, drawMs, token);
           if (!exampleRunning || token !== exampleToken) return;
-          if (i < paths.length - 1) await wait(80);
+          if (i < paths.length - 1) await wait(150);
         }
         await wait(1500);
         if (_doodleAnimStop || !exampleRunning || token !== exampleToken) return;
         // Undraw in reverse, still slow enough to read as a plotted trace.
         for (let i = paths.length - 1; i >= 0; i--) {
-          await animPath(paths[i], lens[i], false, Math.max(260, Math.min(660, lens[i] * 2.4)), token);
+          await animPath(paths[i], lens[i], false, Math.max(460, Math.min(1200, lens[i] * 4.3)), token);
           if (!exampleRunning || token !== exampleToken) return;
-          if (i > 0) await wait(40);
+          if (i > 0) await wait(74);
         }
         await wait(320);
       }
@@ -3628,7 +3628,7 @@ let DEPLOYMENT_PROFILE = (window.DEPLOYMENT_PROFILE || "local");
     let i = 0;
     while (true) {
       // Wait for the field to be idle (unfocused and empty).
-      while (!idle()) { input.placeholder = "a smiling sun"; await sleep(240); }
+      while (!idle()) { input.placeholder = subjects[0]; await sleep(240); }
 
       const word = subjects[i % subjects.length];
       i++;
