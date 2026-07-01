@@ -3,48 +3,22 @@
 Artist-Critic loop for SVG sketches: an **Artist** writes SVG, a **Critic**
 looks at the rendered image, and the drawing is revised step by step.
 
-## Repository layout
+## Run locally
 
-```text
-backend/    FastAPI service, model clients, renderer
-frontend/   Static web interface
-```
+Requirements:
 
-## Requirements
-
-- **Python 3.10+**
-- **[Ollama](https://ollama.com)** running locally, with the two models pulled:
+- [Ollama](https://ollama.com) running, with the models pulled:
   ```bash
   ollama pull gemma4:26b
   ollama pull blaifa/InternVL3_5:8b
   ```
-- **Cairo & Pango** native libraries (needed to render SVG to PNG). On macOS:
-  ```bash
-  brew install cairo pango
-  ```
-  On Debian/Ubuntu install the packages listed in `backend/packages.txt`.
+- Cairo & Pango (to render SVG). On macOS: `brew install cairo pango`
 
-Python dependencies are listed in `backend/requirements.txt` and are installed
-automatically by `make local` into a local `.venv`.
-
-## Run locally
+Install dependencies and start:
 
 ```bash
+pip install -r backend/requirements.txt
 make local
 ```
 
 Then open <http://127.0.0.1:8001>.
-
-### Options
-
-Use different Ollama models:
-
-```bash
-make local ARTIST=gemma3:27b CRITIC=blaifa/InternVL3_5:8b
-```
-
-Use a different port if `8001` is busy:
-
-```bash
-make local PORT=8002
-```
