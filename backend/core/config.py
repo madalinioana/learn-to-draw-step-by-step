@@ -77,7 +77,7 @@ USE_GEMINI_CRITIC: bool = (
 )
 GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "")
 # Legacy single-model flag — kept for backward compat. Per-role vars below take precedence.
-GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
+GEMINI_MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash")
 GEMINI_ARTIST_MODEL: str = os.environ.get("GEMINI_ARTIST_MODEL", GEMINI_MODEL)
 GEMINI_CRITIC_MODEL: str = os.environ.get("GEMINI_CRITIC_MODEL", GEMINI_MODEL)
 
