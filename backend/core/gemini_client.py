@@ -24,10 +24,11 @@ import time
 from typing import Any, Dict, List, Optional
 
 try:
-    import google.generativeai as genai
+    from google import genai
+    from google.genai import types as genai_types
 except ImportError as exc:  # pragma: no cover
     raise ImportError(
-        "google-generativeai not installed. Run `pip install google-generativeai==0.8.4` "
+        "google-genai not installed. Run `pip install google-genai` "
         "or set USE_GEMINI=0 in .env to use the local Ollama backend."
     ) from exc
 
@@ -47,21 +48,49 @@ class GeminiError(ModelBackendError):
 
 
 class GeminiClient:
-    """Thin wrapper over `google.generativeai` matching the shared model-client interface."""
+    """Thin wrapper over the `google-genai` SDK matching the shared model-client interface."""
 
-    def __init__(self, api_key: str, default_model: str = "gemini-2.5-flash") -> None:
+    def __init__(
+        self,
+        api_key: str,
+        default_model: str = "gemini-3.5-flash",
+        thinking_level: str = "MINIMAL",
+    ) -> None:
         if not api_key:
             raise ValueError("api_key is required (set GEMINI_API_KEY in .env)")
         self.api_key = api_key
         self.default_model = default_model
+        # Gemini 3.x reasons by default and eats the output budget on hidden
+        # thoughts, truncating the JSON. Cap it (MINIMAL/LOW/MEDIUM/HIGH).
+        self.thinking_level = (thinking_level or "MINIMAL").upper()
         # Lifetime call counters — useful for spotting quota burn during testing.
         self.call_count_text: int = 0
         self.call_count_vision: int = 0
         try:
-            genai.configure(api_key=api_key)
+            self.client = genai.Client(api_key=api_key)
         except Exception as exc:
-            raise GeminiError(f"genai.configure failed: {exc}", original_exception=exc) from exc
-        logger.info("GeminiClient ready (default_model=%s)", default_model)
+            raise GeminiError(f"genai.Client init failed: {exc}", original_exception=exc) from exc
+        logger.info(
+            "GeminiClient ready (default_model=%s, thinking_level=%s)",
+            default_model, self.thinking_level,
+        )
+
+    def _build_config(
+        self,
+        system_prompt: str,
+        temperature: float,
+        max_tokens: int,
+        response_format: Optional[Dict[str, Any]],
+    ) -> "genai_types.GenerateContentConfig":
+        kwargs: Dict[str, Any] = {
+            "system_instruction": system_prompt or "",
+            "temperature": float(temperature),
+            "max_output_tokens": int(max_tokens),
+            "thinking_config": genai_types.ThinkingConfig(thinking_level=self.thinking_level),
+        }
+        if response_format and response_format.get("type") == "json_object":
+            kwargs["response_mime_type"] = "application/json"
+        return genai_types.GenerateContentConfig(**kwargs)
 
     @property
     def total_calls(self) -> int:
@@ -103,21 +132,10 @@ class GeminiClient:
         if not user_prompt:
             raise ValueError("user_prompt is required")
 
-        config: Dict[str, Any] = {
-            "temperature": float(temperature),
-            "max_output_tokens": int(max_tokens),
-        }
-        if response_format and response_format.get("type") == "json_object":
-            config["response_mime_type"] = "application/json"
-
-        gen_model = genai.GenerativeModel(
-            model_name=model,
-            system_instruction=system_prompt or "",
-            generation_config=config,
-        )
+        config = self._build_config(system_prompt, temperature, max_tokens, response_format)
 
         self.call_count_text += 1
-        response = self._generate_with_retry(gen_model, user_prompt)
+        response = self._generate_with_retry(model, user_prompt, config)
 
         text = self._extract_text(response)
         usage = getattr(response, "usage_metadata", None)
@@ -155,22 +173,13 @@ class GeminiClient:
         if not image_bytes:
             raise ValueError("image_bytes is required")
 
-        config: Dict[str, Any] = {
-            "temperature": float(temperature),
-            "max_output_tokens": int(max_tokens),
-        }
-        if response_format and response_format.get("type") == "json_object":
-            config["response_mime_type"] = "application/json"
+        config = self._build_config(system_prompt, temperature, max_tokens, response_format)
 
-        gen_model = genai.GenerativeModel(
-            model_name=model,
-            system_instruction=system_prompt or "",
-            generation_config=config,
+        image_part = genai_types.Part.from_bytes(
+            data=image_bytes, mime_type=f"image/{image_format}"
         )
-
-        image_part = {"mime_type": f"image/{image_format}", "data": image_bytes}
         self.call_count_vision += 1
-        response = self._generate_with_retry(gen_model, [user_prompt, image_part])
+        response = self._generate_with_retry(model, [user_prompt, image_part], config)
 
         text = self._extract_text(response)
         usage = getattr(response, "usage_metadata", None)
@@ -191,7 +200,7 @@ class GeminiClient:
 
     # ── helpers ─────────────────────────────────────────────────────────
 
-    def _generate_with_retry(self, gen_model: Any, content: Any) -> Any:
+    def _generate_with_retry(self, model: str, content: Any, config: Any) -> Any:
         """Call generate_content with exponential backoff on 500 / 429 errors.
 
         Google returns HTTP 500 when the free-tier daily quota is exhausted
@@ -210,7 +219,9 @@ class GeminiClient:
                 )
                 time.sleep(delay)
             try:
-                return gen_model.generate_content(content)
+                return self.client.models.generate_content(
+                    model=model, contents=content, config=config
+                )
             except Exception as exc:
                 last_exc = exc
                 exc_str = str(exc)

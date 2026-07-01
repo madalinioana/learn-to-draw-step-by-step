@@ -39,6 +39,7 @@ from core.config import (
     GEMINI_API_KEY,
     GEMINI_ARTIST_MODEL,
     GEMINI_CRITIC_MODEL,
+    GEMINI_THINKING_LEVEL,
     MAX_ITERATIONS,
     OLLAMA_API_KEY,
     OLLAMA_ARTIST_MODEL,
@@ -100,14 +101,22 @@ def _build_gemini_artist_client():
     from core.gemini_client import GeminiClient
     if not GEMINI_API_KEY:
         raise RuntimeError("GEMINI_API_KEY is empty — set it in .env")
-    return GeminiClient(api_key=GEMINI_API_KEY, default_model=GEMINI_ARTIST_MODEL)
+    return GeminiClient(
+        api_key=GEMINI_API_KEY,
+        default_model=GEMINI_ARTIST_MODEL,
+        thinking_level=GEMINI_THINKING_LEVEL,
+    )
 
 
 def _build_gemini_critic_client():
     from core.gemini_client import GeminiClient
     if not GEMINI_API_KEY:
         raise RuntimeError("GEMINI_API_KEY is empty — set it in .env")
-    return GeminiClient(api_key=GEMINI_API_KEY, default_model=GEMINI_CRITIC_MODEL)
+    return GeminiClient(
+        api_key=GEMINI_API_KEY,
+        default_model=GEMINI_CRITIC_MODEL,
+        thinking_level=GEMINI_THINKING_LEVEL,
+    )
 
 
 def _local_artist_model() -> str:
