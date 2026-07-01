@@ -120,9 +120,8 @@ ARTIST_REVISION_TEMPERATURE: float = float(os.environ.get("ARTIST_REVISION_TEMPE
 # models on the Gemini endpoint ignore JSON mode and emit a markdown "thinking"
 # preamble before the JSON, so the cap must hold preamble + full SVG or the JSON
 # gets truncated mid-string. JSON-mode models (gemini-2.5-flash) stop right after
-# the object, so a generous cap costs them nothing. 2400 was too tight and
-# truncated real responses on hosted gemini-3.1-flash-lite; 4096 gives headroom.
-ARTIST_MAX_TOKENS: int = int(os.environ.get("ARTIST_MAX_TOKENS", "4096"))
+# the object, so a generous cap costs them nothing. 2400 fits both.
+ARTIST_MAX_TOKENS: int = int(os.environ.get("ARTIST_MAX_TOKENS", "2400"))
 
 # Lower temperature for the Critic reduces hallucination and increases consistency
 # of structured output. Tuned for Qwen2.5-VL which exhibits parroting tendencies
